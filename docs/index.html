@@ -1,17 +1,46 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <base href="/hub/">
-  <title>Marvin's Hub</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <base href="/hub/">
+    <title>Marvin's Hub</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Test Landingpage!</h1>
-  <ul>
-    <li><a href="Dass-Das">Dass-Das Quiz</a></li>
-    <li><a href="EU-Hauptstädte">EU-Hauptstädte Quiz</a></li>
-    <li><a href="Watchlist">Watchlist</a></li>
-  </ul>
+
+    <div id="hub-container">
+        <button id="theme-toggle-button" title="Toggle Dark/Light Mode">🌙</button>
+
+        <header>
+            <h1>Marvin's Hub</h1>
+            <p>Eine Sammlung meiner Web-Projekte.</p>
+        </header>
+
+        <main id="project-grid">
+            <a href="Dass-Das" class="project-card">
+                <h3>dass oder das - Quiz</h3>
+                <p>Ein Quiz zur Unterscheidung von "dass" und "das" in deutschen Sätzen.</p>
+            </a>
+
+            <a href="EU-Hauptstädte" class="project-card">
+                <h3>EU-Hauptstädte Quiz</h3>
+                <p>Teste dein Wissen über die Hauptstädte der Länder in der Europäischen Union.</p>
+            </a>
+
+            <a href="Watchlist" class="project-card">
+                <h3>Watchlist</h3>
+                <p>Eine einfache Anwendung zum Verwalten einer Film- oder Serien-Watchlist.</p>
+            </a>
+        </main>
+
+         <div id="credits-footer" title="V1.1">
+             made by Marvin with ❤️
+         </div>
+
+    </div>
+
+    <script src="script.js" defer></script>
+
 </body>
 </html>
