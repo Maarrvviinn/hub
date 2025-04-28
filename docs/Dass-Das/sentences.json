@@ -1,0 +1,102 @@
+[
+    {
+        "sentenceStart": "Ich glaube,",
+        "sentenceEnd": "es heute regnen wird.",
+        "correct": "dass"
+    },
+    {
+        "sentenceStart": "Er hofft,",
+        "sentenceEnd": "er die Prüfung besteht.",
+        "correct": "dass"
+    },
+    {
+        "sentenceStart": "Weißt du,",
+        "sentenceEnd": "morgen Feiertag ist?",
+        "correct": "dass"
+    },
+    {
+        "sentenceStart": "Es ist wichtig,",
+        "sentenceEnd": "du pünktlich kommst.",
+        "correct": "dass"
+    },
+    {
+        "sentenceStart": "Sie sagte,",
+        "sentenceEnd": "sie müde sei.",
+        "correct": "dass"
+    },
+    {
+        "sentenceStart": "Das Auto,",
+        "sentenceEnd": "dort steht, gehört mir.",
+        "correct": "das"
+    },
+    {
+        "sentenceStart": "Gib mir bitte",
+        "sentenceEnd": "Buch dort drüben.",
+        "correct": "das"
+    },
+    {
+        "sentenceStart": "Ich mag",
+        "sentenceEnd": "Haus sehr.",
+        "correct": "das"
+    },
+    {
+        "sentenceStart": "Kind,",
+        "sentenceEnd": "spielt, ist mein Neffe.",
+        "correct": "das"
+    },
+    {
+        "sentenceStart": "Findest du",
+        "sentenceEnd": "auch?",
+        "correct": "das"
+    },
+    {
+        "sentenceStart": "Er ärgert sich,",
+        "sentenceEnd": "er den Bus verpasst hat.",
+        "correct": "dass"
+    },
+    {
+        "sentenceStart": "Ist",
+        "sentenceEnd": "dein neuer Computer?",
+        "correct": "das"
+    },
+    {
+        "sentenceStart": "Problem ist,",
+        "sentenceEnd": "wir zu wenig Zeit haben.",
+        "correct": "dass"
+    },
+    {
+        "sentenceStart": "Ich habe gehört,",
+        "sentenceEnd": "sie umzieht.",
+        "correct": "dass"
+    },
+    {
+        "sentenceStart": "Mädchen,",
+        "sentenceEnd": "ich gestern traf, war sehr nett.",
+        "correct": "das"
+    },
+    {
+        "sentenceStart": "Kannst du mir",
+        "sentenceEnd": "bitte erklären?",
+        "correct": "das"
+    },
+    {
+        "sentenceStart": "Es freut mich,",
+        "sentenceEnd": "du gekommen bist.",
+        "correct": "dass"
+    },
+    {
+        "sentenceStart": "Fenster,",
+        "sentenceEnd": "offen steht, klemmt.",
+        "correct": "das"
+    },
+    {
+        "sentenceStart": "Er wusste nicht,",
+        "sentenceEnd": "er erwartet wurde.",
+        "correct": "dass"
+    },
+    {
+        "sentenceStart": "Nimm",
+        "sentenceEnd": "Geschenk hier.",
+        "correct": "das"
+    }
+]

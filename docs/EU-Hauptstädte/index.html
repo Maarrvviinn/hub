@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EU-Hauptsätdte Quiz</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="container">
+        <button id="theme-toggle-button" title="Toggle Dark/Light Mode" class="hidden">🌙</button>
+
+        <h1>EU-Hauptstädte Quiz</h1>
+
+        <div id="config-area">
+            <h2>Quiz Einstellungen</h2>
+            <div class="config-section">
+                 <h3>Modus wählen:</h3>
+                 <div>
+                     <button id="mode-country-to-capital" class="mode-button">Land -> Hauptstadt</button>
+                     <button id="mode-capital-to-country" class="mode-button">Hauptstadt -> Land</button>
+                 </div>
+            </div>
+            <div id="config-options-container" class="hidden">
+                <div class="config-section">
+                     <h3>Zeitlimit:</h3>
+                     <div id="time-limit-controls">
+                         <input type="checkbox" id="enable-time-limit" title="Zeitlimit aktivieren/deaktivieren">
+                         <input type="number" id="time-limit-value-input" value="60" min="10">
+                         <span id="time-limit-unit">(Sekunden)</span>
+                     </div>
+                </div>
+                 <div class="config-section">
+                     <h3>Länder/Hauptstädte auswählen:</h3>
+                     <div style="justify-content: center;">
+                         <button id="toggle-country-list-btn">Länderliste ein-/ausblenden</button>
+                     </div>
+                     <div id="country-list-container">
+                          <div id="country-list-controls">
+                              <button id="select-all-countries">Alle auswählen</button>
+                              <button id="deselect-all-countries">Alle abwählen</button>
+                          </div>
+                         <div id="country-list"></div>
+                     </div>
+                 </div>
+                 <div id="start-button-container" style="text-align: center; border-bottom: none; padding-bottom: 0;">
+                    <button id="start-quiz-button" disabled>Einstellungen wählen & Quiz starten!</button>
+                 </div>
+             </div>
+        </div>
+
+        <div id="quiz-area">
+            <div id="quiz-header">
+                <span id="score-display">Punkte: 0 / 0</span>
+                <span id="timer" class="hidden">Zeit: 00:00</span>
+                <button id="stop-quiz-button" class="hidden">Quiz Stoppen</button>
+            </div>
+            <p id="question"></p>
+            <input type="text" id="answer-input" placeholder="Deine Antwort..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+            <button id="submit-button">Antwort prüfen</button>
+            <p id="feedback"></p>
+        </div>
+
+         <div id="results-area">
+             <h2>Quiz Beendet!</h2>
+             <div id="score-summary">
+                 <span id="final-score-value">X von Y richtig</span>
+                 <span id="final-score-context" class="hidden"></span>
+             </div>
+              <div id="results-options">
+                 <button id="show-wrong-answers-button" class="hidden">Falsche Antworten anzeigen</button>
+                 <button id="repeat-quiz-button">Wiederholen</button>
+                 <button id="main-menu-button">Hauptmenü</button>
+             </div>
+             <div id="wrong-answers-display" class="hidden"></div>
+         </div>
+
+         <div id="credits-footer" title="V11" class="hidden">
+             made by Marvin with ❤️
+         </div>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>

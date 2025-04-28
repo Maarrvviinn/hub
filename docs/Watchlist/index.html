@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watchlist</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDKs -->
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
+
+</head>
+<body>
+
+    <!-- Main Application -->
+    <div id="app-container">
+        <div id="settings-cog" title="Einstellungen">⚙️</div>
+        <!-- User status is now inside settings modal -->
+        <h1>Watchlist</h1>
+
+         <!-- Controls Area --> 
+         <div class="controls-area">
+             <div class="search-container">
+                 <input type="search" id="search-input" placeholder="Titel suchen...">
+                 <button id="open-filter-btn" title="Erweiterte Suche">🔍</button>
+             </div>
+             <div class="add-item-controls">
+                 <!-- Removed Cloud Save Button -->
+                 <button id="open-add-modal-btn">Hinzufügen</button>
+             </div>
+         </div>
+
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-button active" data-tab="serien">Serien</button>
+            <button class="tab-button" data-tab="filme">Filme</button>
+            <button class="tab-button" data-tab="upcoming">Upcoming</button>
+        </div>
+
+        <!-- Watch Lists -->
+        <ul id="serien-list" class="watchlist active"></ul>
+        <ul id="filme-list" class="watchlist"></ul>
+        <ul id="upcoming-list" class="watchlist"></ul>
+
+    </div>
+
+    <!-- Add Item Modal -->
+    <div id="add-modal" class="modal">
+         <div class="modal-content">
+              <h2>Neuen Eintrag hinzufügen</h2>
+              <div><label for="add-title">Titel:</label><input type="text" id="add-title" required></div>
+               <div id="add-type-selection"><label>Typ:</label><label><input type="radio" name="add-item-type" value="serien" checked> Serie</label><label><input type="radio" name="add-item-type" value="filme"> Film</label></div>
+               <div id="add-tags-input-group"><label for="add-tags-input">Tags:</label><input type="text" id="add-tags-input" placeholder="Tag eingeben, Enter drücken"><div id="add-tags-container" class="tags-container"></div></div>
+              <div id="add-duration-date-group"><label for="add-duration" id="add-duration-label">Dauer:</label><input type="text" id="add-duration" placeholder="z.B. 120 min / 3 Staffeln"></div>
+              <div id="add-upcoming-checkbox-group"><label for="add-upcoming-checkbox"><input type="checkbox" id="add-upcoming-checkbox">Upcoming</label></div>
+              <div class="modal-actions"><button id="save-add-btn" class="save-btn">Speichern</button><button id="cancel-add-btn" class="cancel-btn">Abbrechen</button></div>
+         </div>
+     </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+             <h2>Eintrag bearbeiten</h2>
+             <input type="hidden" id="edit-item-id">
+             <input type="hidden" id="edit-item-type">
+             <div><label for="edit-title">Titel:</label><input type="text" id="edit-title"></div>
+              <div id="edit-tags-input-group"><label for="edit-tags-input">Tags:</label><input type="text" id="edit-tags-input" placeholder="Tag eingeben, Enter drücken"><div id="edit-tags-container" class="tags-container"></div></div>
+             <div id="edit-duration-date-group"><label for="edit-duration-date" id="edit-duration-date-label">Dauer:</label><input type="text" id="edit-duration-date"></div>
+              <div id="edit-upcoming-checkbox-group"><label for="edit-upcoming-checkbox"><input type="checkbox" id="edit-upcoming-checkbox">Upcoming</label></div>
+             <div class="modal-actions"><button id="save-edit-btn" class="save-btn">Speichern</button><button id="cancel-edit-btn" class="cancel-btn">Abbrechen</button></div>
+        </div>
+    </div>
+
+
+     <!-- Settings Modal -->
+     <div id="settings-modal" class="modal">
+         <div class="modal-content">
+             <div class="settings-header">
+                 <h2>Einstellungen</h2>
+                 <button id="theme-toggle-btn" class="icon-btn theme-icon-btn" title="Theme wechseln">?</button>
+             </div>
+
+             <div class="settings-section">
+                 <div class="settings-section-header">
+                     <h3>Darstellung</h3>
+                     <button id="reset-settings-btn" class="icon-btn reset-icon-btn" title="Darstellung zurücksetzen">↩️</button>
+                 </div>
+                 <div class="settings-action settings-action-inline">
+                     <label for="accent-color-picker">Akzentfarbe:</label>
+                     <input type="color" id="accent-color-picker">
+                 </div>
+                 <div class="settings-action settings-action-inline">
+                     <label for="text-size-slider">Textgröße:</label>
+                     <input type="range" id="text-size-slider" min="12" max="20" step="1">
+                     <span id="text-size-value">16px</span>
+                 </div>
+                 <div class="settings-action settings-action-inline">
+                     <label for="max-items-input">Max. Einträge (scrollen):</label>
+                     <input type="number" id="max-items-input" min="3" max="50" step="1" style="width: 60px;">
+                 </div>
+             </div>
+
+             <div class="settings-section">
+                 <h3>Daten & Sync</h3>
+                 <!-- Auth Section: Shows Login button OR User Info/Logout -->
+                 <div id="auth-section-content" class="settings-action settings-action-row">
+                     <button id="login-btn-settings" style="display: none;">Login / Sync</button> <!-- JS manages display -->
+                     <div id="user-info-settings" style="display: none;">
+                         <span id="user-email-settings" title="Eingeloggt als"></span>
+                         <button id="logout-btn-settings" class="icon-btn logout-icon-settings" title="Logout">🚪</button>
+                     </div>
+                 </div>
+                 <!-- Import/Export Buttons -->
+                 <div class="settings-action settings-action-row">
+                     <button id="export-btn">Export (Lokal)</button>
+                     <button id="import-btn">Import (Lokal)</button>
+                     <button id="copy-help-btn" class="help-button" title="AI Prompt kopieren">?</button>
+                 </div>
+                 <!-- **** THIS IS THE STATUS ROW WE RE-ADDED **** -->
+                 <div class="settings-status-row">
+                    <div id="sync-status"></div>
+                    <div id="export-status"></div>
+                    <div id="import-status"></div>
+                    <div id="copy-status"></div>
+                 </div>
+                 <input type="file" id="import-file-input" accept=".json" style="display: none;">
+                 <!-- Removed the help text div -->
+             </div>
+
+             <div class="modal-actions">
+                 <button id="close-settings-btn" class="cancel-btn">Schließen</button>
+             </div>
+         </div>
+     </div>
+
+      <!-- Extended Search Modal -->
+      <div id="extended-search-modal" class="modal">
+          <!-- ... (content as before) ... -->
+           <div class="modal-content">
+              <h2>Erweiterte Suche</h2>
+              <div class="filter-group">
+                  <label>Typ:</label>
+                  <div class="filter-type-options">
+                      <label><input type="checkbox" name="filter-type" value="serien" checked> Serien</label>
+                      <label><input type="checkbox" name="filter-type" value="filme" checked> Filme</label>
+                  </div>
+              </div>
+              <div class="filter-group">
+                  <label>Tags:</label>
+                  <div id="filter-tags-container" class="filter-tags-container"> <span style="color: var(--text-muted-color);">Keine Tags vorhanden.</span> </div>
+              </div>
+              <div class="modal-actions">
+                  <button id="reset-filters-btn" class="cancel-btn">Filter zurücksetzen</button>
+                  <button id="apply-filters-btn" class="save-btn">Anwenden & Schließen</button>
+              </div>
+          </div>
+      </div>
+
+     <!-- Login Modal -->
+     <div id="login-modal" class="modal">
+         <!-- ... (content as before, without Google) ... -->
+          <div class="modal-content login-modal-content">
+             <h2>Login / Registrieren</h2>
+             <div class="login-section">
+                 <h3>Mit E-Mail</h3>
+                 <input type="email" id="login-email-input" placeholder="E-Mail" required autocomplete="email">
+                 <input type="password" id="login-password-input" placeholder="Passwort" required autocomplete="current-password">
+                 <div class="login-buttons">
+                     <button id="login-email-btn">Login</button>
+                     <button id="signup-email-btn">Registrieren</button>
+                 </div>
+                 <div id="login-error-message" class="error-message"></div>
+             </div>
+             <div class="modal-actions">
+                 <button id="close-login-modal-btn" class="cancel-btn">Abbrechen</button>
+             </div>
+         </div>
+     </div>
+
+     <!-- Footer -->
+     <div id="credits-footer" title="V1.5">
+         made by Marvin with ❤️
+     </div>
+
+    <script src="script.js" type="module" defer></script>
+</body>
+</html>
