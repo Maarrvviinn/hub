@@ -54,7 +54,7 @@ Verwalte deine persönliche Watchlist für Filme und Serien mit dieser einfachen
 Diese Anwendung kann direkt online genutzt oder lokal ausgeführt werden. Für die Cloud-Synchronisation ist eine Internetverbindung erforderlich.
 
 **Online (Empfohlen):**
-*   Die App ist über GitHub Pages verfügbar: [**https://maarrvviinn.github.io/Watchlist/**] 
+*   Die App ist über GitHub Pages verfügbar: [**https://maarrvviinn.github.io/hub/Watchlist/**] 
 
 **Lokal:**
 1.  Klone das Repository oder lade die Dateien `index.html`, `style.css` und `script.js` in denselben Ordner herunter.
@@ -128,12 +128,6 @@ Das JSON-Format bleibt unverändert:
 *   `tags`: Array von Strings (leeres Array `[]` wenn keine Tags).
 *   `duration`: Beschreibung der Dauer (String, z.B. "120 min", "3 Staffeln", "N/A").
 *   `isUpcoming`: `true` oder `false` (Boolean).
-
----
-
-## 📄 Lizenz
-
-Dieses Projekt steht unter der MIT-Lizenz. Siehe die [LICENSE](LICENSE)-Datei für Details.
 
 ---
 
