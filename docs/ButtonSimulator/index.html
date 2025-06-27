@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Simulator (Cloud)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Floating Top UI -->
+    <div id="top-bar-currencies" class="top-bar"></div>
+    <div id="corner-cps-display">0 cash/sec</div>
+    
+    <!-- Main Game Content -->
+    <div class="game-container">
+        <div id="shops-container" class="shops-container"></div>
+    </div>
+
+    <!-- Modals -->
+    <button id="settings-toggle">⚙️</button>
+
+    <div id="settings-panel" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn" data-target="settings-panel">×</button>
+            <h2>Settings</h2>
+            <button id="auth-flow-button" class="settings-button">Login</button>
+            <button id="admin-panel-button" class="settings-button hidden">Admin Panel</button>
+        </div>
+    </div>
+    
+    <div id="login-panel" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn" data-target="login-panel">×</button>
+            <h2>Login / Register</h2>
+            <input type="email" id="email-input" class="modal-input" placeholder="Email">
+            <input type="password" id="password-input" class="modal-input" placeholder="Password">
+            <div class="modal-button-group">
+                <button id="login-button" class="modal-button">Login</button>
+                <button id="register-button" class="modal-button secondary">Register</button>
+            </div>
+            <p id="login-error-msg"></p>
+        </div>
+    </div>
+    
+    <div id="admin-panel" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn" data-target="admin-panel">×</button>
+            <h2>Admin Panel</h2>
+            <div class="control-group">
+                <input type="text" id="admin-amount" class="modal-input" placeholder="e.g., 1e6">
+                <button class="modal-button" id="admin-add-cash">Add Cash</button>
+            </div>
+            <div class="control-group">
+                <button class="modal-button" id="admin-add-multiplier">Add Multiplier</button>
+                <button class="modal-button" id="admin-add-rebirths">Add Rebirths</button>
+            </div>
+            <div class="control-group">
+                <button class="modal-button" id="admin-add-superRebirths">Add S-Rebirths</button>
+                <button class="modal-button" id="admin-add-prestige">Add Prestige</button>
+            </div>
+            <button id="admin-reset" class="modal-button logout">HARD RESET LOCAL SAVE</button>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
