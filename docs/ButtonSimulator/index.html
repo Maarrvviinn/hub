@@ -10,58 +10,115 @@
     <!-- Floating Top UI -->
     <div id="top-bar-currencies" class="top-bar"></div>
     <div id="corner-cps-display">0 cash/sec</div>
+
+    <!-- Left Sidebar Navigation -->
+    <nav class="navbar">
+      <ul class="navbar__menu">
+        <li class="navbar__item">
+          <a href="#" class="navbar__link" data-page="main-page"><i data-feather="dollar-sign"></i><span>Game</span></a>
+        </li>
+        <li class="navbar__item">
+          <a href="#" class="navbar__link disabled" data-page="upgrades-page"><i data-feather="lock"></i><span>Upgrades</span></a>        
+        </li>
+        <li class="navbar__item">
+          <a href="#" class="navbar__link" data-page="leaderboard-page"><i data-feather="globe"></i><span>Leaderboard</span></a>        
+        </li>
+        <li class="navbar__item">
+          <a href="#" class="navbar__link" data-page="account-page"><i data-feather="users"></i><span>Account</span></a>        
+        </li>
+        <li class="navbar__item">
+          <a href="#" class="navbar__link" data-page="settings-page"><i data-feather="settings"></i><span>Settings</span></a>        
+        </li>
+      </ul>
+    </nav>
     
-    <!-- Main Game Content -->
+    <!-- Main Content Area with Pages -->
     <div class="game-container">
-        <div id="shops-container" class="shops-container"></div>
+        <!-- Main Game Page -->
+        <div id="main-page" class="page-content">
+            <div id="shops-container" class="shops-container"></div>
+        </div>
+
+        <!-- Leaderboard Page -->
+        <div id="leaderboard-page" class="page-content hidden">
+            <div class="leaderboard-header">
+                <h2>Leaderboards</h2>
+                <div class="leaderboard-meta">
+                    <div id="leaderboard-sort-buttons" class="leaderboard-sorts"></div>
+                    <small id="leaderboard-timestamp">Loading...</small>
+                </div>
+            </div>
+            <div id="leaderboard-table" class="leaderboard-table">
+                <div class="loader"></div>
+            </div>
+        </div>
+
+        <!-- === COMPLETELY REDONE ACCOUNT PAGE STRUCTURE === -->
+        <div id="account-page" class="page-content hidden">
+            <div class="account-grid">
+                
+                <!-- Account Status Card -->
+                <div class="account-card">
+                    <div class="card-header">
+                        <i data-feather="user-check"></i>
+                        <h3>Account Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="account-info">
+                             <p>You are not logged in.</p>
+                             <button id="auth-flow-button-login" class="settings-button">Login / Register</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Customization Card -->
+                <div id="profile-card" class="account-card hidden">
+                    <div class="card-header">
+                        <i data-feather="edit-3"></i>
+                        <h3>Profile Customization</h3>
+                    </div>
+                    <div class="card-body">
+                         <div class="form-group-new">
+                            <input type="text" id="displayName-input" class="modern-input" required>
+                            <label for="displayName-input">Display Name</label>
+                            <button id="save-displayName-button" class="icon-button"><i data-feather="save"></i></button>
+                        </div>
+                        <p class="stats-group">Total Playtime: <strong id="playtime-display">0s</strong></p>
+                    </div>
+                </div>
+
+                <!-- Danger Zone Card -->
+                <div id="actions-card" class="account-card hidden">
+                    <div class="card-header danger">
+                         <i data-feather="alert-triangle"></i>
+                        <h3>Actions</h3>
+                    </div>
+                    <div class="card-body">
+                        <button id="reset-stats-button" class="settings-button logout">Reset Cloud Stats</button>
+                        <button id="auth-flow-button-logout" class="settings-button logout">Logout</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div id="settings-page" class="page-content hidden">
+             <div class="page-box">
+                <h2 class="page-title">Settings</h2>
+                <button id="admin-panel-button" class="settings-button hidden">Admin Panel</button>
+                <p class="text-muted">More settings coming soon.</p>
+            </div>
+        </div>
     </div>
 
     <!-- Modals -->
-    <button id="settings-toggle">⚙️</button>
+    <div id="login-panel" class="modal-overlay"><div class="modal-content"><button class="modal-close-btn" data-target="login-panel">×</button><h2>Login / Register</h2><input type="email" id="email-input" class="modal-input" placeholder="Email"><input type="password" id="password-input" class="modal-input" placeholder="Password"><div class="modal-button-group"><button id="login-button" class="modal-button">Login</button><button id="register-button" class="modal-button secondary">Register</button></div><p id="login-error-msg"></p></div></div>
+    <div id="admin-panel" class="modal-overlay"><div class="modal-content"><button class="modal-close-btn" data-target="admin-panel">×</button><h2>Admin Panel</h2><div class="control-group"><input type="text" id="admin-amount" class="modal-input" placeholder="e.g., 1e6"><button class="modal-button" id="admin-add-cash">Add Cash</button></div><div class="control-group"><button class="modal-button" id="admin-add-multiplier">Add Multiplier</button><button class="modal-button" id="admin-add-rebirths">Add Rebirths</button></div><div class="control-group"><button class="modal-button" id="admin-add-superRebirths">Add S-Rebirths</button><button class="modal-button" id="admin-add-prestige">Add Prestige</button></div><hr><button id="refresh-leaderboard-button" class="modal-button" style="background-color: var(--c-accent); width: 100%;">Refresh Leaderboard</button></div></div>
 
-    <div id="settings-panel" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close-btn" data-target="settings-panel">×</button>
-            <h2>Settings</h2>
-            <button id="auth-flow-button" class="settings-button">Login</button>
-            <button id="admin-panel-button" class="settings-button hidden">Admin Panel</button>
-        </div>
-    </div>
-    
-    <div id="login-panel" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close-btn" data-target="login-panel">×</button>
-            <h2>Login / Register</h2>
-            <input type="email" id="email-input" class="modal-input" placeholder="Email">
-            <input type="password" id="password-input" class="modal-input" placeholder="Password">
-            <div class="modal-button-group">
-                <button id="login-button" class="modal-button">Login</button>
-                <button id="register-button" class="modal-button secondary">Register</button>
-            </div>
-            <p id="login-error-msg"></p>
-        </div>
-    </div>
-    
-    <div id="admin-panel" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close-btn" data-target="admin-panel">×</button>
-            <h2>Admin Panel</h2>
-            <div class="control-group">
-                <input type="text" id="admin-amount" class="modal-input" placeholder="e.g., 1e6">
-                <button class="modal-button" id="admin-add-cash">Add Cash</button>
-            </div>
-            <div class="control-group">
-                <button class="modal-button" id="admin-add-multiplier">Add Multiplier</button>
-                <button class="modal-button" id="admin-add-rebirths">Add Rebirths</button>
-            </div>
-            <div class="control-group">
-                <button class="modal-button" id="admin-add-superRebirths">Add S-Rebirths</button>
-                <button class="modal-button" id="admin-add-prestige">Add Prestige</button>
-            </div>
-            <button id="admin-reset" class="modal-button logout">HARD RESET LOCAL SAVE</button>
-        </div>
-    </div>
-
+    <!-- Scripts -->
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script>feather.replace()</script>
     <script type="module" src="script.js"></script>
 </body>
 </html>
