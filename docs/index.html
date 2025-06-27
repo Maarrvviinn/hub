@@ -5,41 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marvin's Hub</title>
     <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
 </head>
 <body>
 
-    <div id="hub-container">
-        <button id="theme-toggle-button" title="Toggle Dark/Light Mode">🌙</button>
+    <header>
+        <h1>Mein Projekt-Hub</h1>
+        <p>Eine zentrale Anlaufstelle für alle meine Web-Projekte.</p>
+    </header>
 
-        <header>
-            <h1>Marvin's Hub</h1>
-            <p>Eine Sammlung meiner Web-Projekte.</p>
-        </header>
+    <main>
+        <!-- Kategorie: Tools -->
+        <section class="category">
+            <h2>Werkzeuge (Tools)</h2>
+            <div class="project-grid">
+                <a href="https://github.com/YOUR-USERNAME/watchlist-repo" target="_blank" rel="noopener noreferrer" class="project-card">
+                    <h3>Watchlist</h3>
+                </a>
+            </div>
+        </section>
 
-        <main id="project-grid">
-            <a href="Dass-Das" class="project-card">
-                <h3>dass oder das - Quiz</h3>
-                <p>Ein Quiz zur Unterscheidung von "dass" und "das" in Sätzen.</p>
-            </a>
+        <!-- Kategorie: Games -->
+        <section class="category">
+            <h2>Spiele (Games)</h2>
+            <div class="project-grid">
+                <a href="https://github.com/YOUR-USERNAME/button-simulator-repo" target="_blank" rel="noopener noreferrer" class="project-card">
+                    <h3>Button Simulator</h3>
+                </a>
+            </div>
+        </section>
 
-            <a href="EU-Hauptstädte" class="project-card">
-                <h3>EU-Hauptstädte - Quiz</h3>
-                <p>Teste dein Wissen über die Hauptstädte der Länder in der Europäischen Union.</p>
-            </a>
+        <!-- Kategorie: Quiz -->
+        <section class="category">
+            <h2>Quiz</h2>
+            <div class="project-grid">
+                <a href="https://github.com/YOUR-USERNAME/dass-das-quiz-repo" target="_blank" rel="noopener noreferrer" class="project-card">
+                    <h3>Dass Das Quiz</h3>
+                </a>
+                <a href="https://github.com/YOUR-USERNAME/eu-capitals-quiz-repo" target="_blank" rel="noopener noreferrer" class="project-card">
+                    <h3>EU-Hauptstädte Quiz</h3>
+                </a>
+            </div>
+        </section>
+    </main>
 
-            <a href="Watchlist" class="project-card">
-                <h3>Watchlist</h3>
-                <p>Eine einfache Anwendung, mit der du Filme und Serien verwalten kannst, die du noch schauen möchtest.</p>
-            </a>
-        </main>
-
-         <div id="credits-footer" title="V1.1">
-             made by Marvin with ❤️
-         </div>
-
-    </div>
-
-    <script src="script.js" defer></script>
+    <footer>
+        <p>© 2024 Dein Name. Alle Rechte vorbehalten.</p>
+    </footer>
 
 </body>
 </html>

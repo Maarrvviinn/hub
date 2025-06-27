@@ -1,179 +1,117 @@
+/* --- CSS Variablen für einfaches Ändern der Farben --- */
 :root {
-    --bg-color: #f8f9fa;
-    --container-bg: #ffffff;
-    --card-bg: #ffffff;
-    --text-color: #212529;
-    --text-muted-color: #6c757d;
-    --primary-color: #0d6efd;
-    --primary-dark-color: #0a58ca;
-    --border-color: #dee2e6;
-    --shadow-color: rgba(0, 0, 0, 0.075);
-    --shadow-hover-color: rgba(0, 0, 0, 0.15);
+    --bg-color: #1a1a1a;
+    --card-color: #2c2c2c;
+    --card-hover-color: #383838;
+    --text-color: #e0e0e0;
+    --primary-color: #00aaff;
+    --border-color: #444;
 }
 
-body.dark-mode {
-    --bg-color: #1a1a1a;
-    --container-bg: #2b2b2b;
-    --card-bg: #333333;
-    --text-color: #e9ecef;
-    --text-muted-color: #adb5bd;
-    --primary-color: #4dabf7;
-    --primary-dark-color: #339af0;
-    --border-color: #495057;
-    --shadow-color: rgba(0, 0, 0, 0.25);
-    --shadow-hover-color: rgba(0, 0, 0, 0.4);
+/* --- Allgemeine Stile --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    line-height: 1.6;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
-    margin: 0;
-    padding: 30px 15px;
-    box-sizing: border-box;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    line-height: 1.6;
 }
 
-#hub-container {
-    width: 90%;
-    max-width: 1100px;
-    margin: 0 auto;
-    position: relative;
-    padding-bottom: 50px;
-}
-
+/* --- Header --- */
 header {
     text-align: center;
-    margin-bottom: 40px;
+    padding: 3rem 1rem;
     border-bottom: 1px solid var(--border-color);
-    padding-bottom: 20px;
 }
 
 header h1 {
+    font-size: 2.5rem;
     color: var(--primary-color);
-    font-size: 2.5em;
-    margin-bottom: 0.25em;
+    margin-bottom: 0.5rem;
 }
 
-header p {
-    font-size: 1.1em;
-    color: var(--text-muted-color);
+/* --- Hauptinhalt --- */
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
 }
 
-#project-grid {
+/* --- Kategorien --- */
+.category {
+    margin-bottom: 3rem;
+}
+
+.category h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary-color);
+    display: inline-block;
+}
+
+/* --- Projekt-Grid (flexibel und responsiv) --- */
+.project-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 25px;
+    /* Erstellt so viele Spalten wie passen, die min. 250px breit sind */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
 }
 
+/* --- Projekt-Karten --- */
 .project-card {
-    display: block;
-    background-color: var(--card-bg);
+    background-color: var(--card-color);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 20px 25px;
+    padding: 2rem;
+    text-align: center;
     text-decoration: none;
     color: var(--text-color);
-    box-shadow: 0 4px 8px var(--shadow-color);
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    cursor: pointer;
-    height: 100%;
-    box-sizing: border-box;
-}
-
-.project-card:hover,
-.project-card:focus {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px var(--shadow-hover-color);
-    border-color: var(--primary-color);
-    outline: none;
+    transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+    
+    /* Startzustand für die Animation (wird von JS gesteuert) */
+    opacity: 0;
+    transform: translateY(20px);
 }
 
 .project-card h3 {
-    color: var(--primary-color);
-    margin-top: 0;
-    margin-bottom: 10px;
-    font-size: 1.4em;
+    font-size: 1.25rem;
 }
 
-.project-card p {
-    color: var(--text-muted-color);
-    font-size: 0.95em;
-    margin-bottom: 0;
+.project-card:hover {
+    transform: translateY(-5px) scale(1.03);
+    background-color: var(--card-hover-color);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
-#theme-toggle-button {
-     position: absolute;
-     top: 15px;
-     right: 15px;
-     background: none;
-     border: none;
-     color: var(--text-muted-color);
-     padding: 5px 8px;
-     font-size: 1.5em;
-     cursor: pointer;
-     border-radius: 4px;
-     transition: color 0.3s;
-     line-height: 1;
-     z-index: 10;
-}
- #theme-toggle-button:hover {
-     color: var(--text-color);
- }
-
-#credits-footer {
-    position: absolute;
-    bottom: 10px;
-    right: 15px;
-    font-size: 0.8em;
-    color: var(--text-muted-color);
-    cursor: default;
-    z-index: 10;
+/* Klasse, die von JS hinzugefügt wird, um die Karte sichtbar zu machen */
+.project-card.visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
-@media (max-width: 768px) {
+/* --- Footer --- */
+footer {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    margin-top: 2rem;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    color: #888;
+}
+
+/* --- Media Query für kleinere Bildschirme --- */
+@media (max-width: 600px) {
     header h1 {
-        font-size: 2em;
+        font-size: 2rem;
     }
-    #project-grid {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
-    }
-    #hub-container {
-        width: 95%;
-    }
-}
 
-@media (max-width: 480px) {
-    body {
-        padding: 20px 10px;
-    }
-    header h1 {
-        font-size: 1.8em;
-    }
-    header p {
-        font-size: 1em;
-    }
-    #project-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    .project-card {
-        padding: 15px 20px;
-    }
-    #theme-toggle-button {
-        top: 10px;
-        right: 10px;
-        font-size: 1.3em;
-    }
-     #credits-footer {
-        font-size: 0.75em;
-        right: 10px;
-        bottom: 8px;
+    .category h2 {
+        font-size: 1.5rem;
     }
 }

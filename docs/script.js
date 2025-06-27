@@ -1,42 +1,38 @@
-const themeToggleButton = document.getElementById('theme-toggle-button');
+document.addEventListener('DOMContentLoaded', () => {
 
-function applyTheme(theme) {
-    if (theme === 'dark') {
-        document.body.classList.add('dark-mode');
-        themeToggleButton.textContent = '☀️';
-        themeToggleButton.title = "Light Mode wechseln";
-    } else {
-        document.body.classList.remove('dark-mode');
-        themeToggleButton.textContent = '🌙';
-        themeToggleButton.title = "Dark Mode wechseln";
-    }
-}
+    // Ein Willkommensgruß in der Entwicklerkonsole
+    console.log("Willkommen auf meinem Projekt-Hub! Viel Spaß beim Stöbern.");
 
-function toggleTheme() {
-    const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    applyTheme(newTheme);
-    try {
-        localStorage.setItem('hubTheme', newTheme);
-    } catch (e) {
-        console.warn("Konnte Theme-Einstellung nicht im localStorage speichern.");
-    }
-}
+    // Alle Projektkarten auswählen
+    const projectCards = document.querySelectorAll('.project-card');
 
-function initializeHub() {
-    if (themeToggleButton) {
-        themeToggleButton.addEventListener('click', toggleTheme);
-    } else {
-        console.warn("Theme toggle button not found.");
-    }
+    // Optionen für den Intersection Observer
+    // Die Animation startet, wenn 10% der Karte sichtbar sind
+    const observerOptions = {
+        root: null, // Beobachtet im Verhältnis zum Viewport
+        rootMargin: '0px',
+        threshold: 0.1 
+    };
 
-    let savedTheme = 'light';
-    try {
-         savedTheme = localStorage.getItem('hubTheme') || 'light';
-    } catch (e) {
-         console.warn("Konnte Theme-Einstellung nicht aus localStorage laden.");
-    }
-    applyTheme(savedTheme);
-}
+    // Callback-Funktion, die ausgeführt wird, wenn eine Karte sichtbar wird
+    const observerCallback = (entries, observer) => {
+        entries.forEach(entry => {
+            // Wenn das Element den Viewport betritt
+            if (entry.isIntersecting) {
+                // Füge die 'visible'-Klasse hinzu, um die CSS-Transition auszulösen
+                entry.target.classList.add('visible');
+                // Stoppe die Beobachtung für dieses Element, damit die Animation nur einmal abläuft
+                observer.unobserve(entry.target);
+            }
+        });
+    };
 
-initializeHub();
+    // Erstelle einen neuen Intersection Observer
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    // Wende den Observer auf jede einzelne Projektkarte an
+    projectCards.forEach(card => {
+        observer.observe(card);
+    });
+
+});
