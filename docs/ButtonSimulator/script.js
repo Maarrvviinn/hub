@@ -35,7 +35,7 @@ const CONFIG = {
 
 let gameState = { ...INITIAL_STATE };
 let authState = { user: null, isAdmin: false };
-let firestoreSaveInterval = null;
+let saveInterval = null;
 let leaderboardData = null;
 let playtimeInterval = null;
 
@@ -114,6 +114,8 @@ function updateAllUI() {
     for (const key in gameState) { const el = document.getElementById(`stat-${key}`); if (el) el.textContent = formatNumber(gameState[key]); }
     cornerCpsDisplay.textContent = `${formatNumber(calculateCashPerSecond())} cash/sec`;
     playtimeDisplay.textContent = formatPlaytime(gameState.playtime);
+    displayNameInput.value = gameState.displayName || '';
+    if(displayNameInput.value) displayNameInput.parentElement.classList.add('has-content');
     renderShops();
 }
 
@@ -164,6 +166,36 @@ async function fetchAndDisplayLeaderboard(sortBy) {
 }
 
 // ===================================================================================
+// Centralized State Management & Saving
+// ===================================================================================
+function setGameState(newState, options = {}) {
+    gameState = { ...INITIAL_STATE, ...newState };
+    updateAllUI();
+    if (options.save) {
+        if (authState.user) {
+            saveToFirestore();
+        } else {
+            saveToLocalStorage();
+        }
+    }
+}
+
+const LOCAL_SAVE_KEY = 'stratPathSave_v16';
+const saveToLocalStorage = () => {
+    if (authState.user) return;
+    localStorage.setItem(LOCAL_SAVE_KEY, JSON.stringify(gameState, stringifyBigInts));
+};
+
+async function saveToFirestore() {
+    if (!authState.user) return;
+    const saveData = { "Button Simulator": JSON.parse(JSON.stringify(gameState, stringifyBigInts)) };
+    try { 
+        await setDoc(doc(db, "userStats", authState.user.uid), saveData, { merge: true });
+        console.log("Game saved to cloud.");
+    } catch (error) { console.error("Error saving to cloud:", error); }
+}
+
+// ===================================================================================
 // GAME LOGIC
 // ===================================================================================
 function calculateCashPerSecond() { return gameState.multiplier * (1000n / BigInt(GAME_TICK_MS)); }
@@ -180,36 +212,30 @@ function calculateReward(currencyToGain, baseAmount) {
 function handlePurchase(e) {
     const button = e.target.closest('.purchase-button');
     if (!button || button.disabled) return;
+    
     const currency = button.dataset.currency;
     const tierIndex = parseInt(button.dataset.tier);
     const shopData = CONFIG[currency];
     const tierData = shopData.tiers[tierIndex];
 
     if (gameState[shopData.costCurrency] >= tierData.cost) {
-        gameState[shopData.costCurrency] -= tierData.cost;
-        
-        // --- BUG FIX: CORRECTED RESET LOGIC ---
-        if (shopData.resets) {
-            const preservedStats = {
-                displayName: gameState.displayName,
-                playtime: gameState.playtime,
-                rebirths: gameState.rebirths,
-                superRebirths: gameState.superRebirths,
-                prestige: gameState.prestige
-            };
-            
-            gameState = { ...INITIAL_STATE }; // Start fresh
+        let newGameState = { ...gameState }; // Create a mutable copy
 
-            gameState.displayName = preservedStats.displayName;
-            gameState.playtime = preservedStats.playtime;
-            
-            if (!shopData.resets.includes('rebirths')) gameState.rebirths = preservedStats.rebirths;
-            if (!shopData.resets.includes('superRebirths')) gameState.superRebirths = preservedStats.superRebirths;
-            if (!shopData.resets.includes('prestige')) gameState.prestige = preservedStats.prestige;
+        // 1. Pay the cost
+        newGameState[shopData.costCurrency] -= tierData.cost;
+        
+        // 2. Grant the new currency
+        newGameState[currency] += calculateReward(currency, tierData.amount);
+
+        // 3. If it's a reset purchase, reset lower-tier currencies
+        if (shopData.resets) {
+            shopData.resets.forEach(keyToReset => {
+                newGameState[keyToReset] = INITIAL_STATE[keyToReset];
+            });
         }
         
-        gameState[currency] += calculateReward(currency, tierData.amount);
-        updateAllUI();
+        // 4. Update the game state centrally
+        setGameState(newGameState, { save: true });
     }
 }
 
@@ -220,79 +246,67 @@ function gameTick() {
 }
 
 // ===================================================================================
-// SAVING & LOADING
-// ===================================================================================
-const LOCAL_SAVE_KEY = 'stratPathSave_v15';
-const saveToLocalStorage = () => localStorage.setItem(LOCAL_SAVE_KEY, JSON.stringify(gameState, stringifyBigInts));
-const loadFromLocalStorage = () => {
-    const saved = localStorage.getItem(LOCAL_SAVE_KEY);
-    if (saved) { try { gameState = { ...INITIAL_STATE, ...JSON.parse(saved, parseBigInts) }; } catch (e) { gameState = {...INITIAL_STATE}; } }
-    else { gameState = {...INITIAL_STATE}; }
-    updateAllUI();
-};
-async function saveToFirestore() {
-    if (!authState.user) return;
-    // --- BUG FIX: Ensure the latest display name from the input is included in the save state ---
-    gameState.displayName = displayNameInput.value.trim() || gameState.displayName;
-    const saveData = { "Button Simulator": JSON.parse(JSON.stringify(gameState, stringifyBigInts)) };
-    try { await setDoc(doc(db, "userStats", authState.user.uid), saveData, { merge: true }); console.log("Game saved to cloud."); }
-    catch (error) { console.error("Error saving to cloud:", error); }
-}
-async function loadFromFirestore() {
-    if (!authState.user) return;
-    const docRef = doc(db, "userStats", authState.user.uid);
-    try {
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists() && docSnap.data()["Button Simulator"]) {
-            const cloudData = docSnap.data()["Button Simulator"];
-            gameState = { ...INITIAL_STATE, ...JSON.parse(JSON.stringify(cloudData), parseBigInts) };
-        }
-    } catch (error) { console.error("Error loading from cloud:", error); }
-    updateAllUI();
-}
-
-// ===================================================================================
 // AUTHENTICATION & PERMISSIONS
 // ===================================================================================
 onAuthStateChanged(auth, async (user) => {
+    if (saveInterval) clearInterval(saveInterval);
+    if (playtimeInterval) clearInterval(playtimeInterval);
+
     authState.user = user;
     if (user) {
+        // --- LOGGED IN ---
         accountInfoDiv.querySelector('p').innerHTML = `Logged in as: <strong>${user.email}</strong>`;
         authFlowButtonLogin.classList.add('hidden');
         profileCard.classList.remove('hidden');
         actionsCard.classList.remove('hidden');
         
-        await loadFromFirestore();
-        displayNameInput.value = gameState.displayName;
-        if(displayNameInput.value) displayNameInput.parentElement.classList.add('has-content');
+        const docRef = doc(db, "userStats", user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists() && docSnap.data()["Button Simulator"]) {
+            const cloudData = docSnap.data()["Button Simulator"];
+            setGameState({ ...INITIAL_STATE, ...JSON.parse(JSON.stringify(cloudData), parseBigInts) });
+        } else {
+            const defaultName = `User#${Math.floor(1000 + Math.random() * 9000)}`;
+            setGameState({ ...INITIAL_STATE, displayName: defaultName });
+            await saveToFirestore();
+        }
 
         const userPermsRef = doc(db, "userPermissions", user.uid);
-        const docSnap = await getDoc(userPermsRef);
-        authState.isAdmin = (docSnap.exists() && docSnap.data().rank >= 5);
+        const permsSnap = await getDoc(userPermsRef);
+        authState.isAdmin = (permsSnap.exists() && permsSnap.data().rank >= 5);
         adminPanelButton.classList.toggle('hidden', !authState.isAdmin);
         
-        if (firestoreSaveInterval) clearInterval(firestoreSaveInterval);
-        firestoreSaveInterval = setInterval(saveToFirestore, 60000);
+        saveInterval = setInterval(saveToFirestore, 30000);
+        playtimeInterval = setInterval(() => { gameState.playtime++; }, 1000);
+
     } else {
+        // --- LOGGED OUT ---
         accountInfoDiv.querySelector('p').textContent = 'You are not logged in.';
         authFlowButtonLogin.classList.remove('hidden');
         profileCard.classList.add('hidden');
         actionsCard.classList.add('hidden');
         authState.isAdmin = false;
         adminPanelButton.classList.add('hidden');
-        if (firestoreSaveInterval) clearInterval(firestoreSaveInterval);
-        loadFromLocalStorage();
+        
+        const saved = localStorage.getItem(LOCAL_SAVE_KEY);
+        const localState = saved ? JSON.parse(saved, parseBigInts) : { ...INITIAL_STATE };
+        setGameState(localState);
+        
+        saveInterval = setInterval(saveToLocalStorage, 5000);
+        playtimeInterval = setInterval(() => { gameState.playtime++; }, 1000);
     }
 });
 
 // ===================================================================================
 // EVENT LISTENERS
 // ===================================================================================
-document.querySelectorAll('.navbar__link').forEach(link => { if(link.classList.contains('disabled')) return; link.addEventListener('click', (e) => { e.preventDefault(); showPage(link.dataset.page); }); });
 document.getElementById('shops-container').addEventListener('click', handlePurchase);
+document.querySelectorAll('.navbar__link').forEach(link => { if(link.classList.contains('disabled')) return; link.addEventListener('click', (e) => { e.preventDefault(); showPage(link.dataset.page); }); });
 document.querySelectorAll('.modal-close-btn').forEach(btn => btn.onclick = () => document.getElementById(btn.dataset.target).classList.remove('visible'));
 authFlowButtonLogin.onclick = () => document.getElementById('login-panel').classList.add('visible');
-authFlowButtonLogout.onclick = () => signOut(auth);
+authFlowButtonLogout.onclick = () => {
+    saveToFirestore().then(() => signOut(auth));
+};
 adminPanelButton.onclick = () => document.getElementById('admin-panel').classList.add('visible');
 const loginErrorMsg = document.getElementById('login-error-msg');
 document.getElementById('login-button').onclick = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value); loginErrorMsg.textContent = ''; document.getElementById('login-panel').classList.remove('visible');} catch (error) { loginErrorMsg.textContent = error.code; } };
@@ -300,7 +314,6 @@ document.getElementById('register-button').onclick = async () => {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value);
         await setDoc(doc(db, "userPermissions", userCredential.user.uid), { rank: 1 });
-        // --- BUG FIX: CORRECTED REGISTRATION LOGIC ---
         const defaultName = `User#${Math.floor(1000 + Math.random() * 9000)}`;
         const initialData = { ...INITIAL_STATE, displayName: defaultName };
         await setDoc(doc(db, "userStats", userCredential.user.uid), { "Button Simulator": JSON.parse(JSON.stringify(initialData, stringifyBigInts)) });
@@ -311,8 +324,7 @@ document.getElementById('register-button').onclick = async () => {
 document.getElementById('save-displayName-button').onclick = () => {
     const newName = displayNameInput.value.trim();
     if (newName && newName.length > 0 && newName.length <= 20) {
-        gameState.displayName = newName;
-        saveToFirestore();
+        setGameState({ ...gameState, displayName: newName }, { save: true });
         alert("Display name saved!");
     } else {
         alert("Name must be between 1 and 20 characters.");
@@ -324,9 +336,8 @@ document.getElementById('reset-stats-button').onclick = () => {
     const confirmation = prompt(`This will reset ALL your stats for this game. This cannot be undone. To confirm, please type: ${randomString}`);
     if (confirmation === randomString) {
         const oldDisplayName = gameState.displayName;
-        gameState = { ...INITIAL_STATE, displayName: oldDisplayName };
-        saveToFirestore();
-        updateAllUI();
+        const newState = { ...INITIAL_STATE, displayName: oldDisplayName };
+        setGameState(newState, { save: true });
         alert("Your stats have been reset.");
     } else {
         alert("Incorrect code. Reset cancelled.");
@@ -334,11 +345,11 @@ document.getElementById('reset-stats-button').onclick = () => {
 };
 
 const getAdminAmount = () => { let input = document.getElementById('admin-amount').value.toLowerCase().trim(); if (input.includes('e')) { const parts = input.split('e'); return BigInt(parts[0]) * (10n ** BigInt(parts[1])); } return BigInt(input || '1000000'); };
-document.getElementById('admin-add-cash').onclick = () => { gameState.cash += getAdminAmount(); updateAllUI(); };
-document.getElementById('admin-add-multiplier').onclick = () => { gameState.multiplier += getAdminAmount(); updateAllUI(); };
-document.getElementById('admin-add-rebirths').onclick = () => { gameState.rebirths += getAdminAmount(); updateAllUI(); };
-document.getElementById('admin-add-superRebirths').onclick = () => { gameState.superRebirths += getAdminAmount(); updateAllUI(); };
-document.getElementById('admin-add-prestige').onclick = () => { gameState.prestige += getAdminAmount(); updateAllUI(); };
+document.getElementById('admin-add-cash').onclick = () => { setGameState({ ...gameState, cash: gameState.cash + getAdminAmount() }); };
+document.getElementById('admin-add-multiplier').onclick = () => { setGameState({ ...gameState, multiplier: gameState.multiplier + getAdminAmount() }); };
+document.getElementById('admin-add-rebirths').onclick = () => { setGameState({ ...gameState, rebirths: gameState.rebirths + getAdminAmount() }); };
+document.getElementById('admin-add-superRebirths').onclick = () => { setGameState({ ...gameState, superRebirths: gameState.superRebirths + getAdminAmount() }); };
+document.getElementById('admin-add-prestige').onclick = () => { setGameState({ ...gameState, prestige: gameState.prestige + getAdminAmount() }); };
 
 async function handleLeaderboardRefresh() {
     if (!authState.isAdmin) { alert("You are not authorized."); return; }
@@ -381,13 +392,7 @@ document.getElementById('refresh-leaderboard-button').addEventListener('click', 
 // ===================================================================================
 // INITIALIZATION
 // ===================================================================================
-loadFromLocalStorage();
 renderTopBar();
-updateAllUI();
 showPage('main-page');
 setInterval(gameTick, GAME_TICK_MS);
-if (playtimeInterval) clearInterval(playtimeInterval);
-playtimeInterval = setInterval(() => { if(authState.user) { gameState.playtime++; playtimeDisplay.textContent = formatPlaytime(gameState.playtime); } }, 1000);
-setInterval(updateAllUI, 2000);
-setInterval(saveToLocalStorage, 5000);
-window.addEventListener('beforeunload', saveToLocalStorage);
+window.addEventListener('beforeunload', () => { if (authState.user) saveToFirestore(); else saveToLocalStorage(); });
