@@ -169,6 +169,7 @@ async function fetchAndDisplayLeaderboard(sortBy) {
 // Centralized State Management & Saving
 // ===================================================================================
 function setGameState(newState, options = {}) {
+    // Ensure all properties from INITIAL_STATE are present
     gameState = { ...INITIAL_STATE, ...newState };
     updateAllUI();
     if (options.save) {
@@ -219,15 +220,15 @@ function handlePurchase(e) {
     const tierData = shopData.tiers[tierIndex];
 
     if (gameState[shopData.costCurrency] >= tierData.cost) {
-        let newGameState = { ...gameState }; // Create a mutable copy
+        let newGameState = { ...gameState };
 
         // 1. Pay the cost
         newGameState[shopData.costCurrency] -= tierData.cost;
         
-        // 2. Grant the new currency
+        // 2. Grant the new currency FIRST
         newGameState[currency] += calculateReward(currency, tierData.amount);
 
-        // 3. If it's a reset purchase, reset lower-tier currencies
+        // 3. THEN, if it's a reset purchase, reset the lower-tier currencies
         if (shopData.resets) {
             shopData.resets.forEach(keyToReset => {
                 newGameState[keyToReset] = INITIAL_STATE[keyToReset];
@@ -267,8 +268,8 @@ onAuthStateChanged(auth, async (user) => {
             setGameState({ ...INITIAL_STATE, ...JSON.parse(JSON.stringify(cloudData), parseBigInts) });
         } else {
             const defaultName = `User#${Math.floor(1000 + Math.random() * 9000)}`;
-            setGameState({ ...INITIAL_STATE, displayName: defaultName });
-            await saveToFirestore();
+            const initialData = { ...INITIAL_STATE, displayName: defaultName };
+            setGameState(initialData, { save: true }); // Save this initial state to cloud
         }
 
         const userPermsRef = doc(db, "userPermissions", user.uid);
@@ -304,9 +305,7 @@ document.getElementById('shops-container').addEventListener('click', handlePurch
 document.querySelectorAll('.navbar__link').forEach(link => { if(link.classList.contains('disabled')) return; link.addEventListener('click', (e) => { e.preventDefault(); showPage(link.dataset.page); }); });
 document.querySelectorAll('.modal-close-btn').forEach(btn => btn.onclick = () => document.getElementById(btn.dataset.target).classList.remove('visible'));
 authFlowButtonLogin.onclick = () => document.getElementById('login-panel').classList.add('visible');
-authFlowButtonLogout.onclick = () => {
-    saveToFirestore().then(() => signOut(auth));
-};
+authFlowButtonLogout.onclick = () => { saveToFirestore().then(() => signOut(auth)); };
 adminPanelButton.onclick = () => document.getElementById('admin-panel').classList.add('visible');
 const loginErrorMsg = document.getElementById('login-error-msg');
 document.getElementById('login-button').onclick = async () => { try { await signInWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value); loginErrorMsg.textContent = ''; document.getElementById('login-panel').classList.remove('visible');} catch (error) { loginErrorMsg.textContent = error.code; } };
@@ -345,11 +344,11 @@ document.getElementById('reset-stats-button').onclick = () => {
 };
 
 const getAdminAmount = () => { let input = document.getElementById('admin-amount').value.toLowerCase().trim(); if (input.includes('e')) { const parts = input.split('e'); return BigInt(parts[0]) * (10n ** BigInt(parts[1])); } return BigInt(input || '1000000'); };
-document.getElementById('admin-add-cash').onclick = () => { setGameState({ ...gameState, cash: gameState.cash + getAdminAmount() }); };
-document.getElementById('admin-add-multiplier').onclick = () => { setGameState({ ...gameState, multiplier: gameState.multiplier + getAdminAmount() }); };
-document.getElementById('admin-add-rebirths').onclick = () => { setGameState({ ...gameState, rebirths: gameState.rebirths + getAdminAmount() }); };
-document.getElementById('admin-add-superRebirths').onclick = () => { setGameState({ ...gameState, superRebirths: gameState.superRebirths + getAdminAmount() }); };
-document.getElementById('admin-add-prestige').onclick = () => { setGameState({ ...gameState, prestige: gameState.prestige + getAdminAmount() }); };
+document.getElementById('admin-add-cash').onclick = () => setGameState({ ...gameState, cash: gameState.cash + getAdminAmount() });
+document.getElementById('admin-add-multiplier').onclick = () => setGameState({ ...gameState, multiplier: gameState.multiplier + getAdminAmount() });
+document.getElementById('admin-add-rebirths').onclick = () => setGameState({ ...gameState, rebirths: gameState.rebirths + getAdminAmount() });
+document.getElementById('admin-add-superRebirths').onclick = () => setGameState({ ...gameState, superRebirths: gameState.superRebirths + getAdminAmount() });
+document.getElementById('admin-add-prestige').onclick = () => setGameState({ ...gameState, prestige: gameState.prestige + getAdminAmount() });
 
 async function handleLeaderboardRefresh() {
     if (!authState.isAdmin) { alert("You are not authorized."); return; }
@@ -395,4 +394,6 @@ document.getElementById('refresh-leaderboard-button').addEventListener('click', 
 renderTopBar();
 showPage('main-page');
 setInterval(gameTick, GAME_TICK_MS);
+if (playtimeInterval) clearInterval(playtimeInterval);
+playtimeInterval = setInterval(() => { gameState.playtime++; playtimeDisplay.textContent = formatPlaytime(gameState.playtime); }, 1000);
 window.addEventListener('beforeunload', () => { if (authState.user) saveToFirestore(); else saveToLocalStorage(); });
