@@ -314,11 +314,50 @@ input[type=number] { -moz-appearance: textfield; }
     align-items: center;
     margin-bottom: 1.5rem;
 }
+.import-section {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+}
 #user-view > .btn-danger {
     width: 100%;
 }
 
-/* ... other styles ... */
+/* --- Advanced Search --- */
+.search-filters { 
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin: 1.5rem 0; 
+}
+.filter-group { 
+    margin-bottom: 0; 
+}
+.filter-group span { 
+    display: block; 
+    margin-bottom: 0.5rem; 
+    color: var(--text-primary);
+    font-weight: 500;
+}
+.filter-btn {
+    background-color: transparent;
+    border: 1px solid var(--text-secondary);
+    color: var(--text-secondary);
+    padding: 0.5rem 1rem;
+    margin-right: 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.filter-btn:hover {
+    border-color: var(--text-primary);
+    color: var(--text-primary);
+}
+.filter-btn.active {
+    background-color: var(--text-primary);
+    color: var(--bg-primary);
+    border-color: var(--text-primary);
+}
+
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 

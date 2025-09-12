@@ -20,9 +20,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const watchlistArea = document.getElementById('watchlist-area');
     const addEntryBtn = document.getElementById('add-entry-btn');
     const settingsBtn = document.getElementById('settings-btn');
+    const mainSearchBar = document.querySelector('.search-bar');
+
+    // Modals
     const entryModal = document.getElementById('entry-modal');
+    const settingsModal = document.getElementById('settings-modal');
+    const searchPanel = document.getElementById('search-panel');
+    const deleteConfirmModal = document.getElementById('delete-confirm-modal');
     
-    // Auth Elements
+    // Auth & Settings
     const authFormContainer = document.getElementById('auth-form-container');
     const userView = document.getElementById('user-view');
     const userEmailDisplay = document.getElementById('user-email-display');
@@ -38,8 +44,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const showSignup = document.getElementById('show-signup');
     const showLogin = document.getElementById('show-login');
     const authError = document.getElementById('auth-error');
+    const importBtn = document.getElementById('import-btn');
+    const importFileInput = document.getElementById('import-file-input');
 
-    // Entry Modal Elements
+    // Entry Modal
     const entryId = document.getElementById('entry-id');
     const entryName = document.getElementById('entry-name');
     const typeDropdown = document.getElementById('type-dropdown');
@@ -47,14 +55,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const entryTags = document.getElementById('entry-tags');
     const saveEntryBtn = document.getElementById('save-entry-btn');
     const deleteEntryBtn = document.getElementById('delete-entry-btn');
+    const cancelEntryBtn = document.getElementById('cancel-entry-btn');
+    
+    // Delete Confirmation Modal
     const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-    const deleteConfirmModal = document.getElementById('delete-confirm-modal');
+    const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+
+    // Advanced Search
+    const advSearchBtn = document.getElementById('advanced-search-btn');
+    const advSearchInput = document.getElementById('adv-search-input');
+    const maxDurationInput = document.getElementById('max-duration-input');
+    const typeFilterContainer = document.getElementById('type-filter-container');
+    const sortFilterContainer = document.getElementById('sort-filter-container');
+    const applySearchBtn = document.getElementById('apply-search-btn');
+    const resetSearchBtn = document.getElementById('reset-search-btn');
     
     let watchlist = [];
     let currentUser = null;
     let entryIdToDelete = null;
 
-    // --- FIREBASE AUTHENTICATION & DATA LOADING ---
+    // --- FIREBASE AUTH & DATA ---
     auth.onAuthStateChanged(async user => {
         authError.style.display = 'none';
         if (user) {
@@ -107,7 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
         authError.style.display = 'none';
     });
 
-
     // --- FIRESTORE DATA HANDLING ---
     const loadWatchlistFromFirestore = async () => {
         if (!currentUser) return;
@@ -119,24 +138,53 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Error loading watchlist:", error);
         }
     };
-
+    
     const saveWatchlistToFirestore = async () => {
         if (!currentUser) return;
         try {
-            // Ensure the local watchlist array is in the correct visual order before saving
-            const updatedWatchlistOrder = [];
-            document.querySelectorAll('#watchlist-area .entry-card').forEach(cardEl => {
-                const foundItem = watchlist.find(item => item.id === cardEl.dataset.id);
-                if(foundItem) {
-                    updatedWatchlistOrder.push(foundItem);
-                }
-            });
-            watchlist = updatedWatchlistOrder;
             await db.collection('watchlists').doc(currentUser.uid).set({ entries: watchlist });
         } catch (error) {
             console.error("Error saving watchlist:", error);
         }
     };
+
+    // --- IMPORT LOGIC ---
+    importBtn.addEventListener('click', () => {
+        importFileInput.click();
+    });
+
+    importFileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (importedData && Array.isArray(importedData.entries)) {
+                    const existingIds = new Set(watchlist.map(item => item.id));
+                    const newItems = importedData.entries.filter(item => !existingIds.has(item.id));
+                    
+                    if (newItems.length > 0) {
+                        watchlist.push(...newItems);
+                        await saveWatchlistToFirestore();
+                        renderWatchlist();
+                        alert(`Successfully imported ${newItems.length} new entries!`);
+                    } else {
+                        alert("No new entries found to import.");
+                    }
+                } else {
+                    throw new Error("Invalid JSON format.");
+                }
+            } catch (error) {
+                alert("Failed to import file. Please ensure it's a valid JSON file.");
+                console.error("Import error:", error);
+            } finally {
+                importFileInput.value = '';
+            }
+        };
+        reader.readAsText(file);
+    });
 
     // --- UI & Rendering ---
     const renderWatchlist = (itemsToRender = watchlist) => {
@@ -161,11 +209,6 @@ document.addEventListener('DOMContentLoaded', () => {
             card.addEventListener('click', () => openEditModal(item.id));
             card.addEventListener('dragstart', (e) => {
                 e.target.classList.add('dragging');
-            });
-            card.addEventListener('dragend', (e) => {
-                e.target.classList.remove('dragging');
-                // IMPORTANT: Save the new order after dragging is complete
-                saveWatchlistToFirestore();
             });
             watchlistArea.appendChild(card);
         });
@@ -245,13 +288,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- OTHER EVENT LISTENERS ---
-    document.getElementById('cancel-entry-btn').addEventListener('click', () => closeModal(entryModal));
-    document.getElementById('cancel-delete-btn').addEventListener('click', () => closeModal(deleteConfirmModal));
-    settingsBtn.addEventListener('click', () => openModal(document.getElementById('settings-modal')));
-    document.querySelectorAll('.modal-overlay').forEach(modal => {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal(modal);
-        });
+    cancelEntryBtn.addEventListener('click', () => closeModal(entryModal));
+    cancelDeleteBtn.addEventListener('click', () => closeModal(deleteConfirmModal));
+    settingsBtn.addEventListener('click', () => openModal(settingsModal));
+    
+    [entryModal, settingsModal, searchPanel, deleteConfirmModal].forEach(modal => {
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal(modal);
+            });
+        }
     });
     
     // --- SEARCH, SORT, DRAG & DROP ---
@@ -274,7 +320,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    const mainSearchBar = document.querySelector('.search-bar');
     mainSearchBar.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
         const filtered = watchlist.filter(item =>
@@ -284,15 +329,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderWatchlist(filtered);
     });
 
-    const advSearchBtn = document.getElementById('advanced-search-btn');
-    const searchPanel = document.getElementById('search-panel');
-    const advSearchInput = document.getElementById('adv-search-input');
-    const maxDurationInput = document.getElementById('max-duration-input');
-    const typeFilterContainer = document.getElementById('type-filter-container');
-    const sortFilterContainer = document.getElementById('sort-filter-container');
-    const applySearchBtn = document.getElementById('apply-search-btn');
-    const resetSearchBtn = document.getElementById('reset-search-btn');
-    
     advSearchBtn.addEventListener('click', () => openModal(searchPanel));
 
     const handleFilterClick = (container, event) => {
@@ -302,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     typeFilterContainer.addEventListener('click', (e) => handleFilterClick(typeFilterContainer, e));
-    sortFilterContainer.addEventListener('click', (e) => handleFilterClick(typeFilterContainer, e));
+    sortFilterContainer.addEventListener('click', (e) => handleFilterClick(sortFilterContainer, e));
 
     applySearchBtn.addEventListener('click', () => {
         let results = [...watchlist];
@@ -341,6 +377,21 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             watchlistArea.insertBefore(dragging, afterElement);
         }
+    });
+
+    watchlistArea.addEventListener('dragend', (e) => {
+        const draggedElement = e.target;
+        if (!draggedElement.classList.contains('entry-card')) return;
+        
+        const newOrder = [];
+        document.querySelectorAll('#watchlist-area .entry-card').forEach(cardEl => {
+            const foundItem = watchlist.find(item => item.id === cardEl.dataset.id);
+            if (foundItem) {
+                newOrder.push(foundItem);
+            }
+        });
+        watchlist = newOrder;
+        saveWatchlistToFirestore();
     });
 
     function getDragAfterElement(container, y) {
