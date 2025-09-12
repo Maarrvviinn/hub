@@ -1,188 +1,160 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Watchlist</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Firebase SDKs -->
-    <script type="module" src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js"></script>
-    <script type="module" src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
-
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
-    <!-- Main Application -->
-    <div id="app-container">
-        <div id="settings-cog" title="Einstellungen">⚙️</div>
-        <!-- User status is now inside settings modal -->
-        <h1>Watchlist</h1>
+    <!-- SVG Definitions for gradients -->
+    <svg width="0" height="0" style="position:absolute">
+        <defs>
+            <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color: #22c55e;" />
+                <stop offset="100%" style="stop-color: #14b8a6;" />
+            </linearGradient>
+        </defs>
+    </svg>
 
-         <!-- Controls Area --> 
-         <div class="controls-area">
-             <div class="search-container">
-                 <input type="search" id="search-input" placeholder="Titel suchen...">
-                 <button id="open-filter-btn" title="Erweiterte Suche">🔍</button>
-             </div>
-             <div class="add-item-controls">
-                 <!-- Removed Cloud Save Button -->
-                 <button id="open-add-modal-btn">Hinzufügen</button>
-             </div>
-         </div>
+    <header>
+        <h1 class="main-title">Watchlist</h1>
+    </header>
 
-        <!-- Tab Navigation -->
-        <div class="tab-navigation">
-            <button class="tab-button active" data-tab="serien">Serien</button>
-            <button class="tab-button" data-tab="filme">Filme</button>
-            <button class="tab-button" data-tab="upcoming">Upcoming</button>
+    <div class="controls-bar">
+        <div class="search-container">
+            <input type="text" class="search-bar" placeholder="Search by name or tags">
+            <button id="advanced-search-btn" class="search-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
         </div>
-
-        <!-- Watch Lists -->
-        <ul id="serien-list" class="watchlist active"></ul>
-        <ul id="filme-list" class="watchlist"></ul>
-        <ul id="upcoming-list" class="watchlist"></ul>
-
+        <button id="add-entry-btn" class="icon-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+        <button id="settings-btn" class="icon-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82-.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
     </div>
 
-    <!-- Add Item Modal -->
-    <div id="add-modal" class="modal">
-         <div class="modal-content">
-              <h2>Neuen Eintrag hinzufügen</h2>
-              <div><label for="add-title">Titel:</label><input type="text" id="add-title" required></div>
-               <div id="add-type-selection"><label>Typ:</label><label><input type="radio" name="add-item-type" value="serien" checked> Serie</label><label><input type="radio" name="add-item-type" value="filme"> Film</label></div>
-               <div id="add-tags-input-group"><label for="add-tags-input">Tags:</label><input type="text" id="add-tags-input" placeholder="Tag eingeben, Enter drücken"><div id="add-tags-container" class="tags-container"></div></div>
-              <div id="add-duration-date-group"><label for="add-duration" id="add-duration-label">Dauer:</label><input type="text" id="add-duration" placeholder="z.B. 120 min / 3 Staffeln"></div>
-              <div id="add-upcoming-checkbox-group"><label for="add-upcoming-checkbox"><input type="checkbox" id="add-upcoming-checkbox">Upcoming</label></div>
-              <div class="modal-actions"><button id="save-add-btn" class="save-btn">Speichern</button><button id="cancel-add-btn" class="cancel-btn">Abbrechen</button></div>
-         </div>
-     </div>
+    <main id="watchlist-area" class="watchlist-area">
+        <!-- Watchlist cards will be inserted here by JavaScript -->
+    </main>
 
-    <!-- Edit Modal -->
-    <div id="edit-modal" class="modal">
+    <!-- Add/Edit Entry Modal -->
+    <div id="entry-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
-             <h2>Eintrag bearbeiten</h2>
-             <input type="hidden" id="edit-item-id">
-             <input type="hidden" id="edit-item-type">
-             <div><label for="edit-title">Titel:</label><input type="text" id="edit-title"></div>
-              <div id="edit-tags-input-group"><label for="edit-tags-input">Tags:</label><input type="text" id="edit-tags-input" placeholder="Tag eingeben, Enter drücken"><div id="edit-tags-container" class="tags-container"></div></div>
-             <div id="edit-duration-date-group"><label for="edit-duration-date" id="edit-duration-date-label">Dauer:</label><input type="text" id="edit-duration-date"></div>
-              <div id="edit-upcoming-checkbox-group"><label for="edit-upcoming-checkbox"><input type="checkbox" id="edit-upcoming-checkbox">Upcoming</label></div>
-             <div class="modal-actions"><button id="save-edit-btn" class="save-btn">Speichern</button><button id="cancel-edit-btn" class="cancel-btn">Abbrechen</button></div>
+            <h2 class="modal-title">Add Entry</h2>
+            <div class="entry-form">
+                <input type="hidden" id="entry-id">
+                <input type="text" id="entry-name" placeholder="Name">
+                <div class="form-row">
+                    <input type="number" id="entry-duration" placeholder="Duration (min)" class="form-input-half">
+                    <div class="custom-dropdown" id="type-dropdown">
+                        <div class="dropdown-selected" data-value="movie">
+                            <span>Movie</span>
+                            <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </div>
+                        <ul class="dropdown-options">
+                            <li data-value="movie">Movie</li>
+                            <li data-value="tv-show">TV Show</li>
+                        </ul>
+                    </div>
+                </div>
+                <input type="text" id="entry-tags" placeholder="Tags (comma separated)">
+            </div>
+            <div class="modal-buttons modal-buttons-center">
+                <button id="save-entry-btn" class="btn-primary">Save</button>
+                <button id="delete-entry-btn" class="btn-danger">Delete</button>
+                <button id="cancel-entry-btn" class="btn-secondary">Cancel</button>
+            </div>
         </div>
     </div>
 
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2 class="modal-title">Account</h2>
 
-     <!-- Settings Modal -->
-     <div id="settings-modal" class="modal">
-         <div class="modal-content">
-             <div class="settings-header">
-                 <h2>Einstellungen</h2>
-                 <button id="theme-toggle-btn" class="icon-btn theme-icon-btn" title="Theme wechseln">?</button>
-             </div>
+            <!-- This view shows when user is LOGGED OUT -->
+            <div id="auth-form-container">
+                <div id="login-view">
+                    <input type="email" id="login-email" placeholder="Email">
+                    <input type="password" id="login-password" placeholder="Password">
+                    <button id="login-btn" class="btn-primary auth-btn">Login</button>
+                    <p class="auth-switcher">Need an account? <a href="#" id="show-signup">Sign Up</a></p>
+                </div>
+                <div id="signup-view" style="display: none;">
+                    <input type="email" id="signup-email" placeholder="Email">
+                    <input type="password" id="signup-password" placeholder="Password">
+                    <button id="signup-btn" class="btn-primary auth-btn">Sign Up</button>
+                    <p class="auth-switcher">Already have an account? <a href="#" id="show-login">Login</a></p>
+                </div>
+                <p id="auth-error" class="auth-error-message" style="display: none;"></p>
+            </div>
 
-             <div class="settings-section">
-                 <div class="settings-section-header">
-                     <h3>Darstellung</h3>
-                     <button id="reset-settings-btn" class="icon-btn reset-icon-btn" title="Darstellung zurücksetzen">↩️</button>
-                 </div>
-                 <div class="settings-action settings-action-inline">
-                     <label for="accent-color-picker">Akzentfarbe:</label>
-                     <input type="color" id="accent-color-picker">
-                 </div>
-                 <div class="settings-action settings-action-inline">
-                     <label for="text-size-slider">Textgröße:</label>
-                     <input type="range" id="text-size-slider" min="12" max="20" step="1">
-                     <span id="text-size-value">16px</span>
-                 </div>
-                 <div class="settings-action settings-action-inline">
-                     <label for="max-items-input">Max. Einträge (scrollen):</label>
-                     <input type="number" id="max-items-input" min="3" max="50" step="1" style="width: 60px;">
-                 </div>
-             </div>
+            <!-- This view shows when user is LOGGED IN -->
+            <div id="user-view" style="display: none;">
+                <div class="setting-item">
+                    <span>Logged in as:</span>
+                    <span id="user-email-display" style="color: var(--text-secondary);"></span>
+                </div>
+                <button id="logout-btn" class="btn-danger">Logout</button>
+            </div>
+        </div>
+    </div>
 
-             <div class="settings-section">
-                 <h3>Daten & Sync</h3>
-                 <!-- Auth Section: Shows Login button OR User Info/Logout -->
-                 <div id="auth-section-content" class="settings-action settings-action-row">
-                     <button id="login-btn-settings" style="display: none;">Login / Sync</button> <!-- JS manages display -->
-                     <div id="user-info-settings" style="display: none;">
-                         <span id="user-email-settings" title="Eingeloggt als"></span>
-                         <button id="logout-btn-settings" class="icon-btn logout-icon-settings" title="Logout">🚪</button>
-                     </div>
-                 </div>
-                 <!-- Import/Export Buttons -->
-                 <div class="settings-action settings-action-row">
-                     <button id="export-btn">Export (Lokal)</button>
-                     <button id="import-btn">Import (Lokal)</button>
-                     <button id="copy-help-btn" class="help-button" title="AI Prompt kopieren">?</button>
-                 </div>
-                 <!-- **** THIS IS THE STATUS ROW WE RE-ADDED **** -->
-                 <div class="settings-status-row">
-                    <div id="sync-status"></div>
-                    <div id="export-status"></div>
-                    <div id="import-status"></div>
-                    <div id="copy-status"></div>
-                 </div>
-                 <input type="file" id="import-file-input" accept=".json" style="display: none;">
-                 <!-- Removed the help text div -->
-             </div>
+    <!-- Advanced Search Panel -->
+    <div id="search-panel" class="modal-overlay" style="display: none;">
+        <div class="search-panel-content">
+            <h2 class="modal-title">Advanced Search</h2>
+            <input type="text" id="adv-search-input" placeholder="Search by name or tags">
+            <div class="search-filters">
+                <div class="filter-group">
+                    <span>Type:</span>
+                    <div id="type-filter-container">
+                        <button class="filter-btn active" data-type="all">All</button>
+                        <button class="filter-btn" data-type="movie">Movie</button>
+                        <button class="filter-btn" data-type="tv-show">TV Show</button>
+                    </div>
+                </div>
+                <div class="filter-group">
+                     <span>Max Duration:</span>
+                    <input type="number" id="max-duration-input" placeholder="e.g., 180">
+                </div>
+                <div class="filter-group">
+                    <span>Sort by:</span>
+                    <div id="sort-filter-container">
+                        <button class="filter-btn active" data-sort="name">Name</button>
+                        <button class="filter-btn" data-sort="duration">Duration</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button id="apply-search-btn" class="btn-primary">Apply</button>
+                <button id="reset-search-btn" class="btn-danger">Reset</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-confirm-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2 class="modal-title">Are you sure?</h2>
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1.5rem;">This action cannot be undone.</p>
+            <div class="modal-buttons">
+                <button id="confirm-delete-btn" class="btn-danger">Confirm Delete</button>
+                <button id="cancel-delete-btn" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
 
-             <div class="modal-actions">
-                 <button id="close-settings-btn" class="cancel-btn">Schließen</button>
-             </div>
-         </div>
-     </div>
-
-      <!-- Extended Search Modal -->
-      <div id="extended-search-modal" class="modal">
-          <!-- ... (content as before) ... -->
-           <div class="modal-content">
-              <h2>Erweiterte Suche</h2>
-              <div class="filter-group">
-                  <label>Typ:</label>
-                  <div class="filter-type-options">
-                      <label><input type="checkbox" name="filter-type" value="serien" checked> Serien</label>
-                      <label><input type="checkbox" name="filter-type" value="filme" checked> Filme</label>
-                  </div>
-              </div>
-              <div class="filter-group">
-                  <label>Tags:</label>
-                  <div id="filter-tags-container" class="filter-tags-container"> <span style="color: var(--text-muted-color);">Keine Tags vorhanden.</span> </div>
-              </div>
-              <div class="modal-actions">
-                  <button id="reset-filters-btn" class="cancel-btn">Filter zurücksetzen</button>
-                  <button id="apply-filters-btn" class="save-btn">Anwenden & Schließen</button>
-              </div>
-          </div>
-      </div>
-
-     <!-- Login Modal -->
-     <div id="login-modal" class="modal">
-         <!-- ... (content as before, without Google) ... -->
-          <div class="modal-content login-modal-content">
-             <h2>Login / Registrieren</h2>
-             <div class="login-section">
-                 <h3>Mit E-Mail</h3>
-                 <input type="email" id="login-email-input" placeholder="E-Mail" required autocomplete="email">
-                 <input type="password" id="login-password-input" placeholder="Passwort" required autocomplete="current-password">
-                 <div class="login-buttons">
-                     <button id="login-email-btn">Login</button>
-                     <button id="signup-email-btn">Registrieren</button>
-                 </div>
-                 <div id="login-error-message" class="error-message"></div>
-             </div>
-             <div class="modal-actions">
-                 <button id="close-login-modal-btn" class="cancel-btn">Abbrechen</button>
-             </div>
-         </div>
-     </div>
-
-     <!-- Footer -->
-     <div id="credits-footer" title="V1.5">
-         made by Marvin with ❤️
-     </div>
-
-    <script src="script.js" type="module" defer></script>
+    <script src="script.js"></script>
 </body>
 </html>

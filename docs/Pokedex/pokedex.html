@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marvin's Pokédex</title>
+    <link rel="icon" type="image/png" href="https://www.pokewiki.de//images/8/89/Pok%C3%A9ball_What_Kind_of_Future.png">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        :root {
+            --primary-color: #ef5350; --background-color: #1c1c1c; --card-background: #333;
+            --text-color: #f5f5f5; --subtle-text: #bdbdbd; --modal-overlay: rgba(0, 0, 0, 0.85);
+            --success-color: #66bb6a; --info-color: #29b6f6; --active-color: var(--primary-color);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--background-color); color: var(--text-color); padding: 2rem 1rem; }
+        body.modal-open { overflow: hidden; }
+
+        /* --- Custom Scrollbar --- */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: var(--background-color); }
+        ::-webkit-scrollbar-thumb { background: #555; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: #777; }
+
+        /* --- Header & Controls --- */
+        .header { text-align: center; margin-bottom: 2rem; max-width: 1400px; margin: 0 auto 2rem auto; }
+        .header h1 { font-size: 3rem; color: var(--primary-color); text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .controls-wrapper { position: relative; }
+        .controls-container {
+            margin-top: 1.5rem; display: flex; flex-wrap: wrap; justify-content: center;
+            align-items: center; gap: 1rem;
+        }
+        .search-wrapper { position: relative; width: 100%; max-width: 350px; }
+        #clear-search-btn { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); font-size: 1.5rem; color: var(--subtle-text); cursor: pointer; display: none; }
+        #search-input:not(:placeholder-shown) + #clear-search-btn { display: block; }
+        #search-input, .control-btn {
+            padding: 0.75rem 1rem; border: 2px solid var(--card-background); border-radius: 25px;
+            background-color: var(--card-background); color: var(--text-color); font-size: 1rem;
+            font-family: 'Poppins', sans-serif; transition: all 0.3s; cursor: pointer;
+        }
+        #search-input { width: 100%; cursor: text; padding-right: 2.5rem; }
+        #search-input:focus { outline: none; border-color: var(--primary-color); }
+        .control-btn.active { border-color: var(--active-color); color: var(--active-color); }
+        #refresh-btn, #shiny-toggle {
+            width: 50px; height: 50px;
+            display: flex; align-items: center; justify-content: center; padding: 0;
+        }
+        .control-btn svg { width: 24px; height: 24px; stroke: currentColor; }
+        #lang-toggle span { color: var(--subtle-text); transition: color 0.2s, font-weight 0.2s; }
+        #lang-toggle.lang-en-active .lang-en,
+        #lang-toggle.lang-de-active .lang-de {
+            color: var(--active-color); font-weight: 700;
+        }
+        
+        /* --- Custom Dropdowns & Filter Panel --- */
+        .dropdown { position: relative; }
+        #filter-panel, #sort-options {
+            position: absolute; top: 110%; left: 50%; transform: translateX(-50%);
+            background: var(--card-background); padding: 1rem; border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5); z-index: 10;
+            width: 90%; max-width: 600px;
+            border: 1px solid #555;
+            visibility: hidden; opacity: 0;
+            transform: translateY(-10px) translateX(-50%);
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+        }
+        #filter-panel.visible, #sort-options.visible {
+            visibility: visible; opacity: 1;
+            transform: translateY(0) translateX(-50%);
+        }
+        #sort-options {
+            width: auto; min-width: 200px; padding: 0.5rem;
+            display: flex; flex-direction: column; gap: 0.25rem;
+        }
+        .sort-option {
+            padding: 0.5rem 1rem; border-radius: 10px; cursor: pointer;
+            transition: background-color 0.2s;
+            user-select: none; -webkit-user-select: none;
+        }
+        .sort-option:focus { outline: none; }
+        .sort-option:hover { background-color: var(--background-color); }
+        .filter-section { margin-bottom: 1.5rem; }
+        .filter-section:last-child { margin-bottom: 0; }
+        .filter-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; border-bottom: 1px solid #555; padding-bottom: 0.5rem; }
+        .filter-buttons-container { display: flex; flex-wrap: wrap; gap: 8px; }
+        .type-filter-btn, .gen-filter-btn { padding: 4px 12px; border: 2px solid transparent; border-radius: 15px; color: white; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); cursor: pointer; transition: all 0.2s; }
+        .gen-filter-btn { background-color: #555; }
+        .type-filter-btn.active, .gen-filter-btn.active { border-color: white; transform: scale(1.05); }
+        #type-match-mode { font-size: 0.8rem; padding: 4px 8px; background-color: #555; }
+        #reset-filters-btn { width: 100%; margin-top: 1rem; background: var(--primary-color); border: none; }
+
+        /* --- Loader --- */
+        #loader { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1001; display: flex; flex-direction: column; align-items: center; }
+        .pokeball-wrapper { margin-bottom: 1rem; }
+        .pokeball { width: 60px; height: 60px; background-color: #fff; border-radius: 50%; position: relative; overflow: hidden; border: 3px solid #000; animation: pokeball-spin .8s linear 0s infinite; }
+        .pokeball:after { content: ''; position: absolute; top: -3px; left: -3px; width: 60px; height: 30px; background-color: #f00; border-bottom: 4px solid #000; }
+        .pokeball:before { content: ''; position: absolute; background-color: #fff; width: 10px; height: 10px; border: 4px solid #000; border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1; }
+        @keyframes pokeball-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #no-results { text-align: center; margin-top: 3rem; font-size: 1.2rem; color: var(--subtle-text); display: none; }
+        #scroll-to-top { position: fixed; bottom: 20px; right: 20px; background-color: var(--primary-color); color: white; border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 24px; cursor: pointer; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.4); opacity: 0; transition: opacity 0.3s, transform 0.3s; z-index: 50; }
+        #scroll-to-top.visible { display: flex; opacity: 1; }
+
+        /* --- Pokédex Grid & Card --- */
+        #pokedex-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; max-width: 1400px; margin: 2rem auto 0; }
+        .pokemon-card { background-color: var(--card-background); border-radius: 15px; padding: 1rem; text-align: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer; display: flex; flex-direction: column; align-items: center; }
+        .pokemon-card:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); }
+        .pokemon-id { font-size: 0.8rem; color: var(--subtle-text); font-weight: 600; }
+        .pokemon-card img { width: 120px; height: 120px; image-rendering: pixelated; margin-bottom: 0.5rem; transition: transform 0.3s; }
+        .pokemon-card:hover img { transform: scale(1.1); }
+        .pokemon-name { font-size: 1.1rem; font-weight: 600; text-transform: capitalize; transition: color 0.2s ease; margin-bottom: 0.5rem; }
+        .card-types { display: flex; gap: 5px; justify-content: center; }
+        .card-type-badge { padding: 2px 8px; border-radius: 10px; color: white; font-weight: 600; font-size: 0.7rem; text-transform: uppercase; text-shadow: 1px 1px 1px rgba(0,0,0,0.4); }
+        .hidden { display: none !important; }
+
+        /* --- Modal Styles --- */
+        #modal-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); display: none; z-index: 1000; overflow-y: auto; align-items: flex-start; justify-content: center; padding: 3rem 1rem; }
+        #modal-content { background-color: var(--card-background); padding: 1rem; border-radius: 20px; width: 100%; max-width: 800px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #555; margin-bottom: 3rem; }
+        #modal-close { position: absolute; top: 15px; right: 20px; font-size: 2rem; font-weight: bold; color: var(--subtle-text); cursor: pointer; transition: color 0.2s; z-index: 10; }
+        .modal-link { position: absolute; top: 20px; left: 20px; z-index: 10; }
+        .modal-link img { width: 24px; height: 24px; opacity: 0.7; transition: all 0.2s ease; }
+        .modal-link:hover img { opacity: 1; transform: scale(1.1); }
+        .modal-nav { position: absolute; top: 125px; transform: translateY(-50%); background-color: rgba(255,255,255,0.1); border: none; color: white; font-size: 2rem; width: 40px; height: 60px; cursor: pointer; z-index: 5; border-radius: 8px; transition: background-color 0.2s; }
+        #modal-prev { left: 15px; } #modal-next { right: 15px; }
+        .modal-loader-container { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; align-items: center; z-index: 100; }
+        .modal-header { text-align: center; margin-bottom: 1rem; padding-top: 1rem; }
+        .modal-header img { width: 150px; height: 150px; image-rendering: pixelated; background-color: rgba(0,0,0,0.2); border-radius: 50%; padding: 10px; }
+        .modal-header h2 { font-size: 2rem; text-transform: capitalize; }
+        .modal-types { display: flex; justify-content: center; gap: 10px; margin-top: 0.5rem; }
+        .type-badge { padding: 5px 15px; border-radius: 15px; color: white; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); display: inline-flex; align-items: center; gap: 6px; }
+        .type-badge.clickable { cursor: pointer; transition: transform 0.2s; }
+        .type-badge.clickable:hover { transform: scale(1.05); border: 1px solid white; padding: 4px 14px; }
+        .type-badge .multiplier { font-size: 0.75rem; background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 8px; }
+        .modal-body-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 1rem; padding: 0 1rem; }
+        .modal-section h3 { font-size: 1.2rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--background-color); }
+        
+        /* Stats Section */
+        .stats-container { font-size: 0.9rem; }
+        .stat-row { display: grid; grid-template-columns: 100px 40px 1fr 40px 40px; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .stat-name { font-weight: 600; text-transform: capitalize; }
+        .stat-value, .stat-min, .stat-max { text-align: center; }
+        .stat-bar-outline { border: 1px solid #555; border-radius: 5px; height: 10px; padding: 1px; }
+        .stat-bar-inner { height: 100%; border-radius: 3px; }
+        .stat-total-row { color: var(--subtle-text); font-weight: 600; }
+        .stat-total-row .stat-name { color: var(--text-color); }
+        .stat-total-row .stat-value { font-weight: bold; color: var(--text-color); }
+        .hp .stat-bar-inner { background-color: #FF5959; }
+        .attack .stat-bar-inner { background-color: #F5AC78; }
+        .defense .stat-bar-inner { background-color: #FAE078; }
+        .special-attack .stat-bar-inner { background-color: #9DB7F5; }
+        .special-defense .stat-bar-inner { background-color: #A7DB8A; }
+        .speed .stat-bar-inner { background-color: #FA92B2; }
+
+        /* Catch Rate Section */
+        .catch-info-container {
+            font-size: 0.9rem; margin-top: 1.5rem; padding-top: 1rem;
+            border-top: 1px solid #555; color: var(--subtle-text); text-align: center;
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem;
+        }
+        .ball-bonus-selector { display: flex; align-items: center; gap: 0.5rem; }
+        #ball-bonus-input {
+            background-color: var(--background-color); color: var(--text-color);
+            border: 1px solid #555; border-radius: 5px;
+            width: 60px; padding: 4px; text-align: center; font-family: 'Poppins', sans-serif;
+            color-scheme: dark;
+            transition: border-color 0.2s;
+        }
+        #ball-bonus-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        /* Effectiveness Section */
+        .effectiveness-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; transition: opacity 0.3s ease-in-out; }
+        .effectiveness-section h3 { font-size: 1.1rem; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--background-color); }
+        .effectiveness-section .types-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .effectiveness-section h3.weak, .effectiveness-section h3.super-effective { color: var(--primary-color); }
+        .effectiveness-section h3.resist, .effectiveness-section h3.not-very-effective { color: var(--success-color); }
+        .effectiveness-section h3.immune, .effectiveness-section h3.no-effect { color: var(--info-color); }
+        
+        /* Effectiveness Toggle Switch */
+        .effectiveness-toggle { display: flex; justify-content: center; align-items: center; margin-bottom: 1rem; }
+        .switch-label { margin: 0 10px; cursor: pointer; }
+        .switch-label svg { width: 24px; height: 24px; stroke: currentColor; opacity: 0.6; transition: opacity 0.4s ease; }
+        .switch-label.active svg { opacity: 1; }
+        .switch-container { background-color: var(--background-color); width: 60px; height: 30px; border-radius: 15px; cursor: pointer; position: relative; }
+        .switch-slider { background-color: #fff; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
+        .switch-container.toggled .switch-slider { transform: translateX(30px); }
+    </style>
+</head>
+<body>
+    <header class="header" id="top">
+        <h1>Marvin's Pokédex</h1>
+        <div class="controls-wrapper">
+            <div class="controls-container">
+                <div class="search-wrapper">
+                    <input type="text" id="search-input" placeholder="Search Pokémon..." autocomplete="off">
+                    <span id="clear-search-btn">&times;</span>
+                </div>
+                <div class="dropdown">
+                    <button id="sort-btn" class="control-btn">ID (Asc) ▾</button>
+                    <div id="sort-options">
+                        <div class="sort-option" data-value="id-asc">ID (Asc)</div>
+                        <div class="sort-option" data-value="id-desc">ID (Desc)</div>
+                        <div class="sort-option" data-value="name-asc">Name (A-Z)</div>
+                        <div class="sort-option" data-value="name-desc">Name (Z-A)</div>
+                    </div>
+                </div>
+                <button id="filter-btn" class="control-btn">Filters ▾</button>
+                <button id="lang-toggle" class="control-btn" title="Switch Language">
+                    <span class="lang-en">EN</span> / <span class="lang-de">DE</span>
+                </button>
+                <button id="shiny-toggle" class="control-btn" title="Toggle Shiny Sprites">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M19 3V7M17 5H21M19 17V21M17 19H21M10 5L8.53001 8.72721C8.3421 9.20367 8.24814 9.4419 8.10427 9.64278C7.97675 9.82084 7.82084 9.97675 7.64278 10.1043C7.4419 10.2481 7.20367 10.3421 6.72721 10.53L3 12L6.72721 13.47C7.20367 13.6579 7.4419 13.7519 7.64278 13.8957C7.82084 14.0233 7.97675 14.1792 8.10427 14.3572C8.24814 14.5581 8.3421 14.7963 8.53001 15.2728L10 19L11.47 15.2728C11.6579 14.7963 11.7519 14.5581 11.8957 14.3572C12.0233 14.1792 12.1792 14.0233 12.3572 13.8957C12.5581 13.7519 12.7963 13.6579 13.2728 13.47L17 12L13.2728 10.53C12.7963 10.3421 12.5581 10.2481 12.3572 10.1043C12.1792 9.97675 12.0233 9.82084 11.8957 9.64278C11.7519 9.4419 11.6579 9.20367 11.47 8.72721L10 5Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <button id="refresh-btn" class="control-btn" title="Clear Cache & Refresh">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 3V8M21 8H16M21 8L18 5.29168C16.4077 3.86656 14.3051 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21C16.2832 21 19.8675 18.008 20.777 14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+            </div>
+            <div id="filter-panel">
+                <div class="filter-section">
+                    <h3>Generation</h3>
+                    <div id="gen-filter-container" class="filter-buttons-container"></div>
+                </div>
+                <div class="filter-section">
+                    <div class="filter-section-header">
+                        <h3>Type</h3>
+                        <button id="type-match-mode" class="control-btn">Match Any</button>
+                    </div>
+                    <div id="type-filter-container" class="filter-buttons-container"></div>
+                </div>
+                <button id="reset-filters-btn" class="control-btn">Reset Filters</button>
+            </div>
+        </div>
+    </header>
+
+    <div id="loader">
+        <div class="pokeball-wrapper"><div class="pokeball"></div></div>
+        <span id="loader-text">Loading...</span>
+    </div>
+    <main id="pokedex-container"></main>
+    <div id="no-results"><p>No Pokémon found matching your criteria.</p></div>
+
+    <div id="modal-container">
+        <div id="modal-content">
+            <a id="modal-wiki-link" href="#" target="_blank" rel="noopener noreferrer" class="modal-link" title="View on Pokewiki.de">
+                <img src="https://www.pokewiki.de/images/favicon.ico" alt="Pokewiki">
+            </a>
+            <span id="modal-close">&times;</span>
+            <button id="modal-prev" class="modal-nav">‹</button>
+            <button id="modal-next" class="modal-nav">›</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+    
+    <button id="scroll-to-top" title="Go to top">▲</button>
+
+    <script>
+        // DOM Elements
+        const pokedexContainer = document.getElementById('pokedex-container');
+        const searchInput = document.getElementById('search-input');
+        const clearSearchBtn = document.getElementById('clear-search-btn');
+        const genFilterContainer = document.getElementById('gen-filter-container');
+        const typeFilterContainer = document.getElementById('type-filter-container');
+        const langToggle = document.getElementById('lang-toggle');
+        const filterBtn = document.getElementById('filter-btn');
+        const filterPanel = document.getElementById('filter-panel');
+        const resetFiltersBtn = document.getElementById('reset-filters-btn');
+        const loader = document.getElementById('loader');
+        const loaderText = document.getElementById('loader-text');
+        const noResultsMessage = document.getElementById('no-results');
+        const modalContainer = document.getElementById('modal-container');
+        const modalBody = document.getElementById('modal-body');
+        const modalClose = document.getElementById('modal-close');
+        const modalWikiLink = document.getElementById('modal-wiki-link');
+        const scrollToTopBtn = document.getElementById('scroll-to-top');
+        const sortBtn = document.getElementById('sort-btn');
+        const sortOptions = document.getElementById('sort-options');
+        const typeMatchModeBtn = document.getElementById('type-match-mode');
+        const modalNavPrev = document.getElementById('modal-prev');
+        const modalNavNext = document.getElementById('modal-next');
+        const shinyToggle = document.getElementById('shiny-toggle');
+        const refreshBtn = document.getElementById('refresh-btn');
+
+        // State & Data
+        let allPokemonData = [];
+        let generationData = {};
+        let currentLanguage, currentSort, typeMatchMode, isShinyView;
+        let currentPokemonIdInModal = null;
+        const apiCache = {};
+        const STORAGE_KEY = 'marvinPokedexState';
+        const typeColors = { normal: '#A8A77A', fire: '#EE8130', water: '#6390F0', electric: '#F7D02C', grass: '#7AC74C', ice: '#96D9D6', fighting: '#C22E28', poison: '#A33EA1', ground: '#E2BF65', flying: '#A98FF3', psychic: '#F95587', bug: '#A6B91A', rock: '#B6A136', ghost: '#735797', dragon: '#6F35FC', dark: '#705746', steel: '#B7B7CE', fairy: '#D685AD' };
+        const statNames = { 'hp': 'HP', 'attack': 'Attack', 'defense': 'Defense', 'special-attack': 'Sp. Atk', 'special-defense': 'Sp. Def', 'speed': 'Speed' };
+
+        const saveState = () => {
+            const state = {
+                lang: currentLanguage, sort: currentSort, search: searchInput.value, shiny: isShinyView,
+                matchMode: typeMatchMode,
+                gens: Array.from(genFilterContainer.querySelectorAll('.active')).map(b => b.dataset.gen),
+                types: Array.from(typeFilterContainer.querySelectorAll('.active')).map(b => b.dataset.type),
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        };
+        
+        const loadState = () => {
+            const savedState = localStorage.getItem(STORAGE_KEY);
+            const defaults = { lang: 'en', sort: 'id-asc', search: '', shiny: false, matchMode: 'any', gens: [], types: [] };
+            const state = savedState ? { ...defaults, ...JSON.parse(savedState) } : defaults;
+            currentLanguage = state.lang; currentSort = state.sort; isShinyView = state.shiny; typeMatchMode = state.matchMode;
+            searchInput.value = state.search;
+            const sortOption = sortOptions.querySelector(`.sort-option[data-value="${state.sort}"]`);
+            if (sortOption) {
+                sortBtn.textContent = `${sortOption.textContent} ▾`;
+            }
+            return state;
+        };
+
+        const fetchFromApi = async (url) => {
+            if (apiCache[url]) return apiCache[url];
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            apiCache[url] = data;
+            return data;
+        };
+
+        const initializePokedex = async () => {
+            const initialState = loadState();
+            loader.style.display = 'flex';
+
+            try {
+                loaderText.textContent = "Fetching Pokémon list...";
+                const [pokemonListRes, generationsRes] = await Promise.all([
+                    fetchFromApi('https://pokeapi.co/api/v2/pokemon?limit=1025'),
+                    fetchFromApi('https://pokeapi.co/api/v2/generation/')
+                ]);
+
+                generationsRes.results.forEach((gen, i) => {
+                    const genNumber = i + 1;
+                    const btn = document.createElement('button');
+                    btn.className = 'gen-filter-btn'; btn.textContent = `Gen ${genNumber}`; btn.dataset.gen = genNumber;
+                    if (initialState.gens.includes(String(genNumber))) btn.classList.add('active');
+                    btn.addEventListener('click', () => { btn.classList.toggle('active'); applyFiltersAndSort(); });
+                    genFilterContainer.appendChild(btn);
+                });
+                
+                Object.keys(typeColors).forEach(type => {
+                    const btn = document.createElement('button');
+                    btn.className = 'type-filter-btn'; btn.textContent = type; btn.dataset.type = type;
+                    btn.style.backgroundColor = typeColors[type];
+                    if (initialState.types.includes(type)) btn.classList.add('active');
+                    btn.addEventListener('click', () => { btn.classList.toggle('active'); applyFiltersAndSort(); });
+                    typeFilterContainer.appendChild(btn);
+                });
+
+                loaderText.textContent = `Fetching data for ${pokemonListRes.results.length} Pokémon...`;
+                const allPokemonPromises = pokemonListRes.results.map(p => fetchFromApi(p.url));
+                const allSpeciesPromises = pokemonListRes.results.map(p => fetchFromApi(p.url.replace('/pokemon/', '/pokemon-species/')));
+                
+                const allResults = await Promise.allSettled(allPokemonPromises);
+                const allSpeciesResults = await Promise.allSettled(allSpeciesPromises);
+
+                allPokemonData = allResults.map((result, index) => {
+                    if (result.status === 'rejected') return null;
+                    const pData = result.value;
+                    const speciesResult = allSpeciesResults[index];
+                    let nameDe = pData.name;
+                    if (speciesResult.status === 'fulfilled') {
+                        const deNameEntry = speciesResult.value.names.find(n => n.language.name === 'de');
+                        if (deNameEntry) nameDe = deNameEntry.name;
+                    }
+                    return { id: pData.id, nameEn: pData.name, nameDe: nameDe, types: pData.types.map(t => t.type.name) };
+                }).filter(p => p !== null);
+                
+                renderAllCards();
+                updateUIState();
+                await applyFiltersAndSort();
+
+            } catch (error) {
+                console.error("Initialization failed:", error);
+                pokedexContainer.innerHTML = "<p>Could not load Pokédex. Please try refreshing.</p>";
+            } finally {
+                loader.style.display = 'none';
+            }
+        };
+
+        const getSpriteUrl = (id) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${isShinyView ? 'shiny/' : ''}${id}.png`;
+
+        function renderAllCards() {
+            pokedexContainer.innerHTML = allPokemonData.map(p => `
+                <div class="pokemon-card" data-id="${p.id}" data-name-en="${p.nameEn.toLowerCase()}" data-name-de="${p.nameDe.toLowerCase()}" data-types="${p.types.join(',')}">
+                    <span class="pokemon-id">#${String(p.id).padStart(4, '0')}</span>
+                    <img src="${getSpriteUrl(p.id)}" alt="${p.nameEn}" loading="lazy">
+                    <h2 class="pokemon-name">${currentLanguage === 'de' ? p.nameDe : p.nameEn}</h2>
+                    <div class="card-types">${p.types.map(t => `<span class="card-type-badge" style="background-color: ${typeColors[t]}">${t}</span>`).join('')}</div>
+                </div>`
+            ).join('');
+        }
+
+        const applyFiltersAndSort = async () => {
+            const searchTerm = searchInput.value.toLowerCase();
+            const activeTypes = Array.from(typeFilterContainer.querySelectorAll('.active')).map(btn => btn.dataset.type);
+            const activeGens = Array.from(genFilterContainer.querySelectorAll('.active')).map(btn => btn.dataset.gen);
+            
+            filterBtn.classList.toggle('active', activeGens.length > 0 || activeTypes.length > 0 || searchTerm !== '');
+
+            let genPokemonIds = null;
+            if (activeGens.length > 0) {
+                const gensToFetch = activeGens.filter(gen => !generationData[gen]);
+                if (gensToFetch.length > 0) {
+                    loader.style.display = 'flex';
+                    loaderText.textContent = `Fetching Generation data...`;
+                    await Promise.all(gensToFetch.map(async (gen) => {
+                        const genDetails = await fetchFromApi(`https://pokeapi.co/api/v2/generation/${gen}`);
+                        generationData[gen] = new Set(genDetails.pokemon_species.map(p => parseInt(p.url.split('/').slice(-2, -1)[0])));
+                    }));
+                    loader.style.display = 'none';
+                }
+                genPokemonIds = new Set();
+                activeGens.forEach(gen => { generationData[gen].forEach(id => genPokemonIds.add(id)); });
+            }
+
+            document.querySelectorAll('.pokemon-card').forEach(card => {
+                const id = parseInt(card.dataset.id, 10);
+                const currentName = (currentLanguage === 'de' ? card.dataset.nameDe : card.dataset.nameEn);
+                const cardTypes = card.dataset.types.split(',');
+                const matchesSearch = currentName.toLowerCase().includes(searchTerm);
+                const matchesGen = !genPokemonIds || genPokemonIds.has(id);
+                const matchesTypes = activeTypes.length === 0 ? true : (typeMatchMode === 'any' ? activeTypes.some(t => cardTypes.includes(t)) : activeTypes.every(t => cardTypes.includes(t)));
+                card.classList.toggle('hidden', !(matchesSearch && matchesGen && matchesTypes));
+            });
+
+            noResultsMessage.style.display = pokedexContainer.querySelectorAll('.pokemon-card:not(.hidden)').length === 0 ? 'block' : 'none';
+            sortCards();
+            saveState();
+        };
+
+        const sortCards = () => {
+            const cards = Array.from(pokedexContainer.querySelectorAll('.pokemon-card:not(.hidden)'));
+            cards.sort((a, b) => {
+                const idA = parseInt(a.dataset.id), idB = parseInt(b.dataset.id);
+                const nameA = a.dataset.nameEn, nameB = b.dataset.nameEn;
+                switch (currentSort) {
+                    case 'id-desc': return idB - idA;
+                    case 'name-asc': return nameA.localeCompare(nameB);
+                    case 'name-desc': return nameB.localeCompare(nameA);
+                    default: return idA - idB;
+                }
+            });
+            cards.forEach(card => pokedexContainer.appendChild(card));
+        };
+
+        const updateUIState = () => {
+            langToggle.classList.toggle('lang-en-active', currentLanguage === 'en');
+            langToggle.classList.toggle('lang-de-active', currentLanguage === 'de');
+            document.querySelectorAll('.pokemon-card').forEach(card => {
+                const name = (currentLanguage === 'de') ? card.dataset.nameDe : card.dataset.nameEn;
+                card.querySelector('.pokemon-name').textContent = name;
+            });
+            typeMatchModeBtn.textContent = (typeMatchMode === 'any') ? 'Match Any' : 'Match All';
+            shinyToggle.classList.toggle('active', isShinyView);
+            sortBtn.classList.toggle('active', currentSort !== 'id-asc');
+        };
+
+        const calculateStat = (base, id, statName) => {
+            if (statName === 'hp') {
+                if (id === 292) return { min: 1, max: 1 }; // Shedinja
+                return {
+                    min: Math.floor(base * 2 + 110),
+                    max: Math.floor(base * 2 + 204),
+                };
+            }
+            return {
+                min: Math.floor((base * 2 + 5) * 0.9),
+                max: Math.floor((base * 2 + 99) * 1.1),
+            };
+        };
+
+        const calculateCatchProbability = (catchRate, ballBonus = 1) => {
+            // Simplified Gen V+ formula for a full HP Pokémon with no status conditions.
+            const a = (catchRate * ballBonus) / 3;
+            if (a >= 255) return 100;
+            const b = 65536 / Math.pow(255 / a, 0.1875);
+            const probability = Math.pow(b / 65536, 4);
+            return probability * 100;
+        };
+
+        const showPokemonDetails = async (id) => {
+            currentPokemonIdInModal = id;
+            modalContainer.style.display = 'flex';
+            document.body.classList.add('modal-open');
+            modalBody.innerHTML = `<div class="modal-loader-container"><div class="pokeball-wrapper"><div class="pokeball"></div></div></div>`;
+            try {
+                const [pData, speciesData] = await Promise.all([
+                    fetchFromApi(`https://pokeapi.co/api/v2/pokemon/${id}`),
+                    fetchFromApi(`https://pokeapi.co/api/v2/pokemon-species/${id}`)
+                ]);
+                
+                const pokemonLocalData = allPokemonData.find(p => p.id == id);
+                const displayName = (currentLanguage === 'de' && pokemonLocalData) ? pokemonLocalData.nameDe : pData.name;
+                const wikiName = (pokemonLocalData.nameDe || pData.name).charAt(0).toUpperCase() + (pokemonLocalData.nameDe || pData.name).slice(1);
+                modalWikiLink.href = `https://www.pokewiki.de/${wikiName}`;
+
+                const statTotal = pData.stats.reduce((sum, s) => sum + s.base_stat, 0);
+                const catchRate = speciesData.capture_rate;
+                const initialCatchProb = calculateCatchProbability(catchRate, 1);
+                
+                const shinyArtwork = pData.sprites.other['official-artwork'].front_shiny;
+                const defaultArtwork = pData.sprites.other['official-artwork'].front_default;
+                const artwork = isShinyView ? shinyArtwork || defaultArtwork : defaultArtwork;
+                
+                const statsRowsHtml = pData.stats.map(s => {
+                    const {min, max} = calculateStat(s.base_stat, pData.id, s.stat.name);
+                    const statClassName = s.stat.name;
+                    return `
+                        <div class="stat-row ${statClassName}">
+                            <span class="stat-name">${statNames[s.stat.name] || s.stat.name}</span>
+                            <span class="stat-value">${s.base_stat}</span>
+                            <div class="stat-bar-outline"><div class="stat-bar-inner" style="width: ${(s.base_stat / 255) * 100}%"></div></div>
+                            <span class="stat-min">${min}</span>
+                            <span class="stat-max">${max}</span>
+                        </div>`;
+                }).join('');
+
+                modalBody.innerHTML = `
+                    <div class="modal-header">
+                        <img src="${artwork || getSpriteUrl(id)}" alt="${pData.name}">
+                        <h2>${displayName}</h2>
+                        <div class="modal-types">${pData.types.map(t => `<span class="type-badge clickable" data-type="${t.type.name}" style="background-color: ${typeColors[t.type.name]}">${t.type.name}</span>`).join('')}</div>
+                    </div>
+                    <div class="modal-body-grid">
+                        <div id="effectiveness-container">
+                             <div class="effectiveness-toggle">
+                                <span class="switch-label defense active" title="Defending">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.3586 20.6831C11.5639 20.7901 11.6666 20.8436 11.809 20.8713C11.92 20.8929 12.08 20.8929 12.191 20.8713C12.3334 20.8436 12.4361 20.7901 12.6414 20.6831C14.54 19.6939 20 16.4612 20 12.0001V8.21772C20 7.4182 20 7.01845 19.8692 6.67482C19.7537 6.37126 19.566 6.10039 19.3223 5.88564C19.0465 5.64255 18.6722 5.50219 17.9236 5.22146L12.5618 3.21079C12.3539 3.13283 12.25 3.09385 12.143 3.07839C12.0482 3.06469 11.9518 3.06469 11.857 3.07839C11.75 3.09385 11.6461 3.13283 11.4382 3.21079L6.0764 5.22146C5.3278 5.50219 4.9535 5.64255 4.67766 5.88564C4.43398 6.10039 4.24627 6.37126 4.13076 6.67482C4 7.01845 4 7.4182 4 8.21772V12.0001C4 16.4612 9.45996 19.6939 11.3586 20.6831Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </span>
+                                <div class="switch-container">
+                                    <div class="switch-slider"></div>
+                                </div>
+                                <span class="switch-label offense" title="Attacking">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.7245 11.2754L16 12.4999L10.0129 17.8218C8.05054 19.5661 5.60528 20.6743 3 20.9999L3.79443 19.5435C4.6198 18.0303 5.03249 17.2737 5.50651 16.5582C5.92771 15.9224 6.38492 15.3113 6.87592 14.7278C7.42848 14.071 8.0378 13.4615 9.25644 12.2426L12 9.49822M11.5 8.99787L17.4497 3.04989C18.0698 2.42996 19.0281 2.3017 19.7894 2.73674C20.9027 3.37291 21.1064 4.89355 20.1997 5.80024L19.8415 6.15847C19.6228 6.3771 19.3263 6.49992 19.0171 6.49992H18L16 8.49992V8.67444C16 9.16362 16 9.40821 15.9447 9.63839C15.8957 9.84246 15.8149 10.0375 15.7053 10.2165C15.5816 10.4183 15.4086 10.5913 15.0627 10.9372L14.2501 11.7498L11.5 8.99787Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </span>
+                            </div>
+                            <div class="effectiveness-grid"></div>
+                        </div>
+                        <div class="modal-section">
+                            <h3>Base Stats</h3>
+                            <div class="stats-container">
+                                ${statsRowsHtml}
+                                <div class="stat-row stat-total-row">
+                                    <span class="stat-name">Total</span>
+                                    <span class="stat-value">${statTotal}</span>
+                                    <span></span>
+                                    <span class="stat-min">Min</span>
+                                    <span class="stat-max">Max</span>
+                                </div>
+                            </div>
+                            <div class="catch-info-container">
+                                <div class="catch-rate-display">
+                                    <span>Catch Rate: ${catchRate} (<span id="catch-prob-percent">${initialCatchProb.toFixed(1)}</span>%)</span>
+                                </div>
+                                <div class="ball-bonus-selector">
+                                    <label for="ball-bonus-input">Ball Bonus:</label>
+                                    <input type="number" id="ball-bonus-input" value="1" min="0" step="0.1" title="e.g., Poké Ball = 1, Great Ball = 1.5, Ultra Ball = 2">
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+
+                const ballBonusInput = document.getElementById('ball-bonus-input');
+                const catchProbSpan = document.getElementById('catch-prob-percent');
+                if(ballBonusInput) {
+                    ballBonusInput.addEventListener('input', () => {
+                        const bonus = parseFloat(ballBonusInput.value) || 0;
+                        const newProb = calculateCatchProbability(catchRate, bonus);
+                        catchProbSpan.textContent = newProb.toFixed(1);
+                    });
+                }
+
+                setupEffectivenessToggle(pData.types);
+                updateEffectivenessGrid(pData.types, 'defense');
+
+            } catch (error) { console.error("Details fetch error:", error); modalBody.innerHTML = `<p>Could not load details.</p>`; }
+        };
+
+        const setupEffectivenessToggle = (pokemonTypes) => {
+            const toggleSwitch = document.querySelector('.switch-container');
+            if (!toggleSwitch || toggleSwitch.dataset.listenerAttached) return;
+
+            const toggleHandler = () => {
+                const newMode = toggleSwitch.classList.contains('toggled') ? 'offense' : 'defense';
+                updateEffectivenessGrid(pokemonTypes, newMode);
+            };
+
+            toggleSwitch.addEventListener('click', () => {
+                toggleSwitch.classList.toggle('toggled');
+                document.querySelector('.switch-label.defense').classList.toggle('active');
+                document.querySelector('.switch-label.offense').classList.toggle('active');
+                toggleHandler();
+            });
+            toggleSwitch.dataset.listenerAttached = 'true';
+        };
+
+        const updateEffectivenessGrid = async (pokemonTypes, viewMode) => {
+            const grid = document.querySelector('.effectiveness-grid');
+            if (!grid) return;
+
+            const createSectionHtml = (title, types, className, multiplier) => {
+                const typeList = Array.isArray(types) ? types : Object.keys(types);
+                if (typeList.length === 0) return '';
+                const multiplierHtml = (type) => {
+                    const value = multiplier !== undefined ? multiplier : (types[type] !== undefined ? types[type] : 0);
+                    return `<span class="multiplier">x${value}</span>`;
+                };
+                return `<div class="effectiveness-section"><h3 class="${className}">${title}</h3><div class="types-list">${typeList.map(t => `<span class="type-badge" style="background-color: ${typeColors[t]}">${t} ${multiplierHtml(t)}</span>`).join('')}</div></div>`;
+            };
+
+            let effectivenessHtml = '';
+
+            if (viewMode === 'defense') {
+                const damageMap = {};
+                Object.keys(typeColors).forEach(t => damageMap[t] = 1);
+                const typeDetails = await Promise.all(pokemonTypes.map(typeInfo => fetchFromApi(typeInfo.type.url)));
+                typeDetails.forEach(typeData => {
+                    typeData.damage_relations.double_damage_from.forEach(t => damageMap[t.name] *= 2);
+                    typeData.damage_relations.half_damage_from.forEach(t => damageMap[t.name] *= 0.5);
+                    typeData.damage_relations.no_damage_from.forEach(t => damageMap[t.name] *= 0);
+                });
+                const effectiveness = { weak: {}, resist: {}, immune: [] };
+                Object.entries(damageMap).forEach(([type, m]) => {
+                    if (m > 1) effectiveness.weak[type] = m;
+                    else if (m < 1 && m > 0) effectiveness.resist[type] = m;
+                    else if (m === 0) effectiveness.immune.push(type);
+                });
+                effectivenessHtml = `${createSectionHtml('Weak To', effectiveness.weak, 'weak')}${createSectionHtml('Resists', effectiveness.resist, 'resist')}${createSectionHtml('Immune To', effectiveness.immune, 'immune')}`;
+            } else {
+                const relations = { super: new Set(), not: new Set(), none: new Set() };
+                const typeDetails = await Promise.all(pokemonTypes.map(typeInfo => fetchFromApi(typeInfo.type.url)));
+                typeDetails.forEach(typeData => {
+                    typeData.damage_relations.double_damage_to.forEach(t => relations.super.add(t.name));
+                    typeData.damage_relations.half_damage_to.forEach(t => relations.not.add(t.name));
+                    typeData.damage_relations.no_damage_to.forEach(t => relations.none.add(t.name));
+                });
+                effectivenessHtml = `${createSectionHtml('Super Effective Against', Array.from(relations.super).sort(), 'super-effective', 2)}${createSectionHtml('Not Very Effective Against', Array.from(relations.not).sort(), 'not-very-effective', 0.5)}${createSectionHtml('No Effect Against', Array.from(relations.none).sort(), 'no-effect', 0)}`;
+            }
+            grid.style.opacity = 0;
+            setTimeout(() => {
+                grid.innerHTML = effectivenessHtml;
+                grid.style.opacity = 1;
+            }, 300);
+        };
+        
+        const closeModal = () => { modalContainer.style.display = 'none'; document.body.classList.remove('modal-open'); };
+        const navigateModal = (direction) => {
+            const visibleCards = Array.from(document.querySelectorAll('.pokemon-card:not(.hidden)'));
+            const currentIndex = visibleCards.findIndex(card => card.dataset.id === String(currentPokemonIdInModal));
+            if (currentIndex === -1) return;
+            const newIndex = (currentIndex + direction + visibleCards.length) % visibleCards.length;
+            showPokemonDetails(visibleCards[newIndex].dataset.id);
+        };
+
+        // --- Event Listeners ---
+        searchInput.addEventListener('input', () => applyFiltersAndSort());
+        clearSearchBtn.addEventListener('click', () => { searchInput.value = ''; applyFiltersAndSort(); });
+        sortBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            filterPanel.classList.remove('visible');
+            sortOptions.classList.toggle('visible');
+        });
+        sortOptions.addEventListener('click', (e) => {
+            const option = e.target.closest('.sort-option');
+            if (option) {
+                currentSort = option.dataset.value;
+                sortBtn.textContent = `${option.textContent} ▾`;
+                sortOptions.classList.remove('visible');
+                sortCards();
+                saveState();
+                updateUIState();
+            }
+        });
+        filterBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            sortOptions.classList.remove('visible');
+            filterPanel.classList.toggle('visible');
+        });
+        document.addEventListener('click', (e) => {
+            if (!filterPanel.contains(e.target) && e.target !== filterBtn) {
+                filterPanel.classList.remove('visible');
+            }
+            if (!sortOptions.contains(e.target) && e.target !== sortBtn) {
+                sortOptions.classList.remove('visible');
+            }
+        });
+        typeMatchModeBtn.addEventListener('click', () => { typeMatchMode = (typeMatchMode === 'any') ? 'all' : 'any'; updateUIState(); applyFiltersAndSort(); });
+        langToggle.addEventListener('click', () => { currentLanguage = (currentLanguage === 'en') ? 'de' : 'en'; updateUIState(); applyFiltersAndSort(); });
+        shinyToggle.addEventListener('click', () => {
+            isShinyView = !isShinyView;
+            document.querySelectorAll('.pokemon-card img').forEach(img => { img.src = getSpriteUrl(img.closest('.pokemon-card').dataset.id); });
+            updateUIState();
+            saveState();
+        });
+        resetFiltersBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            genFilterContainer.querySelectorAll('.active').forEach(btn => btn.classList.remove('active'));
+            typeFilterContainer.querySelectorAll('.active').forEach(btn => btn.classList.remove('active'));
+            applyFiltersAndSort();
+        });
+        pokedexContainer.addEventListener('click', (e) => { const card = e.target.closest('.pokemon-card'); if (card) showPokemonDetails(card.dataset.id); });
+        modalBody.addEventListener('click', (e) => {
+            const typeBadge = e.target.closest('.type-badge.clickable');
+            if (typeBadge) {
+                const type = typeBadge.dataset.type;
+                typeFilterContainer.querySelectorAll('.active').forEach(b => b.classList.remove('active'));
+                const typeBtn = typeFilterContainer.querySelector(`[data-type="${type}"]`);
+                if (typeBtn) typeBtn.classList.add('active');
+                closeModal();
+                applyFiltersAndSort();
+            }
+        });
+        modalClose.addEventListener('click', closeModal);
+        modalContainer.addEventListener('click', (e) => { if (e.target === modalContainer) closeModal(); });
+        modalNavPrev.addEventListener('click', () => navigateModal(-1));
+        modalNavNext.addEventListener('click', () => navigateModal(1));
+        refreshBtn.addEventListener('click', () => { localStorage.removeItem(STORAGE_KEY); location.reload(); });
+        window.addEventListener('scroll', () => scrollToTopBtn.classList.toggle('visible', window.scrollY > 300));
+        scrollToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+        // --- Initial Load ---
+        initializePokedex();
+    </script>
+</body>
+</html>
