@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abo-Dashboard</title>
+    <style>
+        :root {
+            --primary-color: #007aff;
+            --background-color: #121212;
+            --surface-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --heading-color: #ffffff;
+            --border-color: #2c2c2e;
+            --highlight-color: #30d158;
+            --danger-color: #ff453a;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --border-radius: 12px;
+            --shadow-color: rgba(0, 0, 0, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        html {
+            /* Behobener Glitch: Reserviert Platz für die Scrollbar, um Layout-Sprünge zu verhindern */
+            scrollbar-gutter: stable;
+        }
+
+        body {
+            font-family: var(--font-family);
+            line-height: 1.6;
+            color: var(--text-color);
+            margin: 0;
+            background-color: var(--background-color);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Gestaltete Scrollbar für Dark Mode */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--background-color);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* --- STICKY Header & Totals --- */
+        .header {
+            text-align: center;
+            padding: 15px 20px;
+            background-color: rgba(18, 18, 18, 0.85); /* Semi-transparent für modernen Look */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .header h1 {
+            font-size: 2.2rem;
+            color: var(--heading-color);
+            margin: 0 0 15px 0;
+            font-weight: 700;
+        }
+
+        .totals-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .total-box {
+            background-color: var(--surface-color);
+            padding: 10px 25px;
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .total-box p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #8e8e93;
+        }
+
+        .total-box .amount {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-top: 2px;
+        }
+        
+        main {
+            padding-top: 40px;
+        }
+
+        /* --- Search & Section Headers --- */
+        .search-container {
+            margin-bottom: 20px;
+        }
+        #search-bar {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            color: var(--text-color);
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        #search-bar::placeholder { color: #8e8e93; }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--heading-color);
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .no-results {
+            display: none;
+            color: #8e8e93;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* --- Subscription Lists --- */
+        .subscription-list {
+            display: grid; 
+            gap: 20px;
+            position: relative;
+        }
+
+        .subscription-card {
+            display: flex;
+            align-items: center;
+            background-color: var(--surface-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            transition: opacity 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+            opacity: 0.5;
+            will-change: transform;
+        }
+        
+        .subscription-card.active {
+            opacity: 1;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 20px rgba(0, 122, 255, 0.2);
+        }
+        
+        .subscription-card.custom-item.active {
+             border-color: var(--highlight-color);
+             box-shadow: 0 0 20px rgba(48, 209, 88, 0.2);
+        }
+
+        .subscription-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .sub-logo {
+            width: 40px;
+            height: 40px;
+            margin-right: 20px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .sub-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .sub-logo svg {
+            width: 100%;
+            height: auto;
+            max-height: 100%;
+        }
+
+        .sub-info { flex-grow: 1; }
+        .sub-info h3 { margin: 0 0 5px 0; font-size: 1.2rem; }
+        .sub-info a {
+            color: var(--heading-color);
+            text-decoration: none;
+            transition: color 0.2s ease-in-out;
+        }
+        .sub-info a:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+
+        .sub-info .price-display { color: #8e8e93; font-weight: 600; }
+        .sub-controls { display: flex; align-items: center; gap: 15px; }
+        
+        .plan-selector {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #3a3a3c;
+            font-family: var(--font-family);
+            font-size: 0.9rem;
+            background-color: #2c2c2e;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+        .plan-selector:disabled { opacity: 0.5; }
+        
+        .toggle-switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #3a3a3c; transition: .4s; border-radius: 28px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--highlight-color); }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        /* --- Custom Subscriptions --- */
+        .custom-add-form {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 15px;
+            background-color: var(--surface-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+        }
+        
+        .custom-add-form input {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid #3a3a3c;
+            background-color: #2c2c2e;
+            color: var(--text-color);
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .custom-add-form input::placeholder { color: #8e8e93; }
+        
+        .add-btn {
+            background-color: var(--highlight-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .add-btn:hover { background-color: #2caf4e; }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            width: 30px;
+            height: 30px;
+        }
+        .remove-btn svg { fill: #8e8e93; transition: fill 0.3s ease; }
+        .remove-btn:hover svg { fill: var(--danger-color); }
+
+        /* --- Responsive & Footer --- */
+        .footer { text-align: center; padding: 40px 0; margin-top: 40px; color: #8e8e93; font-size: 0.9rem; }
+        
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.8rem; }
+            .subscription-card { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .sub-controls { width: 100%; justify-content: space-between; }
+            .totals-container { flex-direction: column; gap: 15px; }
+            .custom-add-form { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="header-content">
+            <h1>Abo-Dashboard</h1>
+            <div class="totals-container">
+                <div class="total-box">
+                    <p>Monatliche Kosten</p>
+                    <div class="amount" id="monthly-total">0,00 €</div>
+                </div>
+                <div class="total-box">
+                    <p>Jährliche Kosten</p>
+                    <div class="amount" id="yearly-total">0,00 €</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <main>
+            <h2>Streaming & Gaming</h2>
+            <div class="search-container">
+                <input type="search" id="search-bar" placeholder="Dienste durchsuchen...">
+            </div>
+            <div class="subscription-list" id="subscription-list">
+                <!-- Predefined subscription cards will be dynamically inserted here -->
+            </div>
+             <p class="no-results" id="no-results-message">Keine Dienste gefunden.</p>
+
+            <h2>Eigene Abos</h2>
+            <div class="custom-add-form">
+                <input type="text" id="custom-name" placeholder="Name (z.B. Fitnessstudio)">
+                <input type="number" id="custom-price" placeholder="Preis pro Monat (€)" min="0" step="0.01">
+                <button class="add-btn" id="add-custom-btn">Hinzufügen</button>
+            </div>
+            <div class="subscription-list" id="custom-subscription-list">
+                 <!-- Custom subscription cards will be dynamically inserted here -->
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>Deine Auswahl wird automatisch im Browser gespeichert.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const subscriptions = [
+                { id: 'amazonprime', name: 'Amazon Prime', logo: 'https://www.svgrepo.com/show/475634/amazon-color.svg', pricingUrl: 'https://www.amazon.de/amazonprime', plans: [{ name: 'Monatlich', monthly: 8.99 }, { name: 'Jährlich', monthly: 7.49, yearly: 89.90 }] },
+                { id: 'netflix', name: 'Netflix', logo: 'https://www.svgrepo.com/show/303341/netflix-1-logo.svg', pricingUrl: 'https://www.netflix.com/signup/planform', plans: [{ name: 'Standard mit Werbung', monthly: 4.99 }, { name: 'Standard', monthly: 13.99 }, { name: 'Premium', monthly: 19.99 }] },
+                { id: 'xboxgamepass', name: 'Xbox Game Pass', logo: 'https://www.svgrepo.com/show/473838/xbox.svg', pricingUrl: 'https://www.xbox.com/de-DE/xbox-game-pass#join', plans: [{ name: 'Core', monthly: 6.99 }, { name: 'PC', monthly: 9.99 }, { name: 'Ultimate', monthly: 14.99 }] },
+                { id: 'psplus', name: 'PlayStation Plus', logo: 'https://www.svgrepo.com/show/452087/playstation.svg', pricingUrl: 'https://www.playstation.com/de-de/ps-plus/#subscriptions', plans: [{ name: 'Essential', monthly: 8.99 }, { name: 'Essential (Jährlich)', monthly: 6.00, yearly: 71.99 }, { name: 'Extra', monthly: 13.99 }, { name: 'Extra (Jährlich)', monthly: 10.50, yearly: 125.99 }, { name: 'Premium', monthly: 16.99 }, { name: 'Premium (Jährlich)', monthly: 12.67, yearly: 151.99 }] },
+                { id: 'disneyplus', name: 'Disney+', logo: 'https://www.svgrepo.com/show/464719/disney-plus.svg', pricingUrl: 'https://www.disneyplus.com/de-de', plans: [{ name: 'Standard mit Werbung', monthly: 5.99 }, { name: 'Standard', monthly: 8.99, yearly: 89.90 }, { name: 'Premium', monthly: 11.99, yearly: 119.90 }] },
+                { id: 'youtube', name: 'YouTube Premium', logo: 'https://www.svgrepo.com/show/303198/youtube-icon-logo.svg', pricingUrl: 'https://www.youtube.com/premium', plans: [{ name: 'Einzelperson', monthly: 12.99 }, { name: 'Familie', monthly: 23.99 }, { name: 'Student', monthly: 7.49 }] },
+                { id: 'spotify', name: 'Spotify', logo: 'https://www.svgrepo.com/show/475684/spotify-color.svg', pricingUrl: 'https://www.spotify.com/de/premium/#plans', plans: [{ name: 'Individual', monthly: 10.99 }, { name: 'Duo', monthly: 14.99 }, { name: 'Family', monthly: 17.99 }] },
+                { id: 'nintendoswitch', name: 'Nintendo Switch Online', logo: 'https://www.svgrepo.com/show/303386/nintendo-2-logo.svg', pricingUrl: 'https://ec.nintendo.com/DE/de/membership', plans: [{ name: 'Einzel (1 Monat)', monthly: 3.99 }, { name: 'Einzel (12 Monate)', monthly: 1.67, yearly: 19.99 }, { name: 'Familie (12 Monate)', monthly: 2.92, yearly: 34.99 }, { name: 'Erweiterung Einzel', monthly: 3.33, yearly: 39.99 }, { name: 'Erweiterung Familie', monthly: 5.83, yearly: 69.99 }] },
+                { id: 'eaplay', name: 'EA Play', logo: 'https://www.svgrepo.com/show/330343/ea.svg', pricingUrl: 'https://www.ea.com/de-de/ea-play', plans: [{ name: 'Standard', monthly: 5.99 }, { name: 'Standard (Jährlich)', monthly: 3.33, yearly: 39.99 }, { name: 'Pro', monthly: 16.99 }, { name: 'Pro (Jährlich)', monthly: 10.00, yearly: 119.99 }] },
+                { id: 'paramountplus', name: 'Paramount+', logo: 'https://www.svgrepo.com/show/518462/paramount-plus.svg', pricingUrl: 'https://www.paramountplus.com/de/', plans: [{ name: 'Monatlich', monthly: 7.99 }, { name: 'Jährlich', monthly: 6.66, yearly: 79.90 }] },
+                { id: 'appleone', name: 'Apple One', logo: 'https://www.svgrepo.com/show/475633/apple-color.svg', pricingUrl: 'https://www.apple.com/de/apple-one/', plans: [{ name: 'Einzelperson', monthly: 19.95 }, { name: 'Familie', monthly: 25.95 }, { name: 'Premium', monthly: 34.95 }] },
+                { id: 'hulu', name: 'Hulu (US-Preis)', logo: 'https://www.svgrepo.com/show/303524/hulu-logo.svg', pricingUrl: 'https://help.hulu.com/article/hulu-how-much-does-hulu-cost', plans: [{ name: 'Mit Werbung', monthly: 7.49 }, { name: 'Ohne Werbung', monthly: 16.99 }] },
+                { id: 'googleone', name: 'Google One', logo: 'https://www.svgrepo.com/show/303108/google-icon-logo.svg', pricingUrl: 'https://one.google.com/about/plans', plans: [{ name: '100 GB', monthly: 1.99, yearly: 19.99 }, { name: '200 GB', monthly: 2.99, yearly: 29.99 }, { name: '2 TB', monthly: 9.99, yearly: 99.99 }] }
+            ];
+
+            const listContainer = document.getElementById('subscription-list');
+            const customListContainer = document.getElementById('custom-subscription-list');
+            const monthlyTotalEl = document.getElementById('monthly-total');
+            const yearlyTotalEl = document.getElementById('yearly-total');
+            const searchBar = document.getElementById('search-bar');
+            let customSubscriptions = [];
+
+            const formatCurrency = (value) => new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(value);
+            
+            function animateValue(element, start, end, duration) {
+                let startTimestamp = null;
+                const step = (timestamp) => {
+                    if (!startTimestamp) startTimestamp = timestamp;
+                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                    element.textContent = formatCurrency(progress * (end - start) + start);
+                    if (progress < 1) window.requestAnimationFrame(step);
+                };
+                window.requestAnimationFrame(step);
+            }
+
+            function calculateTotals() {
+                let monthlyTotal = 0, yearlyTotal = 0;
+                subscriptions.forEach(sub => {
+                    const toggle = document.getElementById(`toggle-${sub.id}`);
+                    if (toggle && toggle.checked) {
+                        const selector = document.getElementById(`select-${sub.id}`);
+                        const selectedPlan = sub.plans[selector.value];
+                        monthlyTotal += selectedPlan.monthly;
+                        yearlyTotal += selectedPlan.yearly || (selectedPlan.monthly * 12);
+                    }
+                });
+                customSubscriptions.forEach(sub => {
+                    monthlyTotal += sub.monthly;
+                    yearlyTotal += sub.monthly * 12;
+                });
+                const currentMonthly = parseFloat(monthlyTotalEl.textContent.replace(/[€.\s]/g, '').replace(',', '.')) || 0;
+                const currentYearly = parseFloat(yearlyTotalEl.textContent.replace(/[€.\s]/g, '').replace(',', '.')) || 0;
+                animateValue(monthlyTotalEl, currentMonthly, monthlyTotal, 300);
+                animateValue(yearlyTotalEl, currentYearly, yearlyTotal, 300);
+                saveState();
+            }
+
+            function saveState() {
+                const predefinedState = subscriptions.map(sub => ({
+                    id: sub.id,
+                    active: document.getElementById(`toggle-${sub.id}`).checked,
+                    planIndex: document.getElementById(`select-${sub.id}`).value
+                }));
+                localStorage.setItem('subscriptionState', JSON.stringify(predefinedState));
+                localStorage.setItem('customSubscriptions', JSON.stringify(customSubscriptions));
+            }
+            
+            function renderPredefinedCards() {
+                subscriptions.forEach((sub) => {
+                    const planOptions = sub.plans.map((p, i) => `<option value="${i}">${p.name}${p.yearly ? ` (Jährlich)` : ''}</option>`).join('');
+                    const cardHTML = `
+                        <div class="subscription-card" id="card-${sub.id}" data-name="${sub.name.toLowerCase()}">
+                            <div class="sub-logo"><img src="${sub.logo}" alt="${sub.name} Logo"></div>
+                            <div class="sub-info">
+                                <h3><a href="${sub.pricingUrl}" target="_blank" rel="noopener noreferrer">${sub.name}</a></h3>
+                            </div>
+                            <div class="sub-controls">
+                                <select class="plan-selector" id="select-${sub.id}" disabled>${planOptions}</select>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" class="sub-toggle" id="toggle-${sub.id}">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>`;
+                    listContainer.insertAdjacentHTML('beforeend', cardHTML);
+                });
+            }
+
+            function renderCustomCard(sub) {
+                const cardHTML = `
+                    <div class="subscription-card custom-item active" id="card-${sub.id}" data-id="${sub.id}" data-name="${sub.name.toLowerCase()}">
+                         <div class="sub-logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+                        <div class="sub-info">
+                            <h3>${sub.name}</h3>
+                            <div class="price-display">${formatCurrency(sub.monthly)} / Monat</div>
+                        </div>
+                        <div class="sub-controls">
+                            <button class="remove-btn" data-id="${sub.id}" aria-label="Entfernen"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
+                        </div>
+                    </div>`;
+                customListContainer.insertAdjacentHTML('beforeend', cardHTML);
+            }
+
+            function loadState() {
+                const savedState = JSON.parse(localStorage.getItem('subscriptionState'));
+                if (savedState) {
+                    savedState.forEach(itemState => {
+                        const card = document.getElementById(`card-${itemState.id}`);
+                        const toggle = document.getElementById(`toggle-${itemState.id}`);
+                        const selector = document.getElementById(`select-${itemState.id}`);
+                        if (toggle && selector && card) {
+                            toggle.checked = itemState.active;
+                            selector.value = itemState.planIndex;
+                            if (itemState.active) {
+                                card.classList.add('active');
+                                selector.disabled = false;
+                            }
+                        }
+                    });
+                }
+                const savedCustom = JSON.parse(localStorage.getItem('customSubscriptions'));
+                if (savedCustom) {
+                    customSubscriptions = savedCustom;
+                    customSubscriptions.forEach(renderCustomCard);
+                }
+                sortCards(false);
+                calculateTotals();
+            }
+
+            function sortCards(animate = true) {
+                const cards = [...listContainer.children];
+                const activeCards = cards.filter(c => c.classList.contains('active'));
+                const inactiveCards = cards.filter(c => !c.classList.contains('active'));
+                
+                const firstPositions = new Map();
+                if (animate) {
+                    cards.forEach(card => firstPositions.set(card, card.getBoundingClientRect()));
+                }
+
+                const sortedCards = [...activeCards, ...inactiveCards];
+                sortedCards.forEach(card => listContainer.appendChild(card));
+
+                if (!animate) return;
+
+                cards.forEach(card => {
+                    const last = card.getBoundingClientRect();
+                    const first = firstPositions.get(card);
+                    const deltaX = first.left - last.left;
+                    const deltaY = first.top - last.top;
+                    if (deltaX === 0 && deltaY === 0) return;
+                    card.style.transition = 'none';
+                    card.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                    card.offsetWidth; 
+                    card.style.transition = `transform 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
+                    card.style.transform = 'translate(0, 0)';
+                });
+            }
+
+            // --- EVENT LISTENERS ---
+            listContainer.addEventListener('change', e => {
+                if (e.target.classList.contains('sub-toggle') || e.target.classList.contains('plan-selector')) {
+                    const subId = e.target.id.replace(/toggle-|select-/, '');
+                    const card = document.getElementById(`card-${subId}`);
+                    const toggle = document.getElementById(`toggle-${subId}`);
+                    card.classList.toggle('active', toggle.checked);
+                    document.getElementById(`select-${subId}`).disabled = !toggle.checked;
+                    if (e.target.classList.contains('sub-toggle')) sortCards();
+                    calculateTotals();
+                }
+            });
+            
+            searchBar.addEventListener('input', e => {
+                const query = e.target.value.toLowerCase().trim();
+                const allCards = listContainer.querySelectorAll('.subscription-card');
+                let visibleCount = 0;
+                allCards.forEach(card => {
+                    const name = card.dataset.name;
+                    const isVisible = name.includes(query);
+                    card.style.display = isVisible ? 'flex' : 'none';
+                    if (isVisible) visibleCount++;
+                });
+                document.getElementById('no-results-message').style.display = visibleCount === 0 && query !== '' ? 'block' : 'none';
+            });
+
+            document.getElementById('add-custom-btn').addEventListener('click', () => {
+                const nameInput = document.getElementById('custom-name');
+                const priceInput = document.getElementById('custom-price');
+                const name = nameInput.value.trim();
+                const price = parseFloat(priceInput.value);
+                if (name && price > 0) {
+                    const newSub = { id: Date.now(), name: name, monthly: price };
+                    customSubscriptions.push(newSub);
+                    renderCustomCard(newSub);
+                    calculateTotals();
+                    nameInput.value = ''; priceInput.value = '';
+                } else { alert("Bitte gib einen gültigen Namen und Preis ein."); }
+            });
+
+            customListContainer.addEventListener('click', e => {
+                const removeButton = e.target.closest('.remove-btn');
+                if (removeButton) {
+                    const subId = removeButton.dataset.id;
+                    customSubscriptions = customSubscriptions.filter(s => s.id != subId);
+                    const cardToRemove = document.getElementById(`card-${subId}`);
+                    cardToRemove.style.transition = 'opacity 0.3s, transform 0.3s';
+                    cardToRemove.style.opacity = '0';
+                    cardToRemove.style.transform = 'translateX(-20px)';
+                    setTimeout(() => { cardToRemove.remove(); calculateTotals(); }, 300);
+                }
+            });
+
+            // --- INITIALIZATION ---
+            renderPredefinedCards();
+            loadState();
+        });
+    </script>
+</body>
+</html>
