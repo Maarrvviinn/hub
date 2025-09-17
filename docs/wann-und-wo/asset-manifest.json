@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/hub/wann-und-wo/static/css/main.f925dd54.css",
-    "main.js": "/hub/wann-und-wo/static/js/main.89785922.js",
+    "main.css": "/hub/wann-und-wo/static/css/main.2751bb5c.css",
+    "main.js": "/hub/wann-und-wo/static/js/main.12286e5a.js",
     "static/js/453.8478b0eb.chunk.js": "/hub/wann-und-wo/static/js/453.8478b0eb.chunk.js",
     "index.html": "/hub/wann-und-wo/index.html",
-    "main.f925dd54.css.map": "/hub/wann-und-wo/static/css/main.f925dd54.css.map",
-    "main.89785922.js.map": "/hub/wann-und-wo/static/js/main.89785922.js.map",
+    "main.2751bb5c.css.map": "/hub/wann-und-wo/static/css/main.2751bb5c.css.map",
+    "main.12286e5a.js.map": "/hub/wann-und-wo/static/js/main.12286e5a.js.map",
     "453.8478b0eb.chunk.js.map": "/hub/wann-und-wo/static/js/453.8478b0eb.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.f925dd54.css",
-    "static/js/main.89785922.js"
+    "static/css/main.2751bb5c.css",
+    "static/js/main.12286e5a.js"
   ]
 }
