@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/hub/docs/wann-und-wo/static/css/main.e167d118.css",
+    "main.js": "/hub/docs/wann-und-wo/static/js/main.51e00881.js",
+    "static/js/453.8478b0eb.chunk.js": "/hub/docs/wann-und-wo/static/js/453.8478b0eb.chunk.js",
+    "index.html": "/hub/docs/wann-und-wo/index.html",
+    "main.e167d118.css.map": "/hub/docs/wann-und-wo/static/css/main.e167d118.css.map",
+    "main.51e00881.js.map": "/hub/docs/wann-und-wo/static/js/main.51e00881.js.map",
+    "453.8478b0eb.chunk.js.map": "/hub/docs/wann-und-wo/static/js/453.8478b0eb.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e167d118.css",
+    "static/js/main.51e00881.js"
+  ]
+}
