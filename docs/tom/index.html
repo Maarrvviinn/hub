@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Ayri Tom</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: #111;
+        font-family:
+          "Segoe UI",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        overflow: hidden;
+        height: 100dvh;
+      }
+
+      /* ── Screen system ── */
+      .screen {
+        position: fixed;
+        inset: 0;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .screen.active {
+        display: flex;
+      }
+
+      /* ════════════════════════════════
+         SCREEN 1 — Age check
+      ════════════════════════════════ */
+      #screen-age {
+        background: #111;
+      }
+
+      .card {
+        width: min(92%, 420px);
+        background: rgba(255 255 255 / 0.04);
+        border: 1px solid rgba(255 255 255 / 0.1);
+        border-radius: 28px;
+        padding: 2.5rem 2rem 2rem;
+        text-align: center;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+      }
+
+      .badge {
+        display: inline-block;
+        background: rgba(255 255 255 / 0.08);
+        border: 1px solid rgba(255 255 255 / 0.2);
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 0.3rem 0.8rem;
+        border-radius: 50px;
+        margin-bottom: 1.4rem;
+      }
+
+      .emoji-row {
+        font-size: 2.8rem;
+        margin-bottom: 1.2rem;
+        animation: headBob 1.4s ease-in-out infinite alternate;
+        display: block;
+      }
+
+      @keyframes headBob {
+        from {
+          transform: translateY(0) rotate(-3deg);
+        }
+        to {
+          transform: translateY(-8px) rotate(3deg);
+        }
+      }
+
+      .card h1 {
+        font-size: clamp(1.25rem, 5vw, 1.6rem);
+        font-weight: 800;
+        color: #fff;
+        line-height: 1.35;
+        margin-bottom: 2rem;
+      }
+
+      .buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        border: none;
+        border-radius: 16px;
+        font-size: 1.05rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition:
+          transform 0.12s,
+          box-shadow 0.12s;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        letter-spacing: 0.3px;
+      }
+      .btn:active {
+        transform: scale(0.94);
+      }
+
+      .btn-yes {
+        background: #fff;
+        color: #111;
+        box-shadow: 0 4px 24px rgba(255 255 255 / 0.15);
+      }
+
+      .btn-no {
+        background: rgba(255 255 255 / 0.07);
+        color: rgba(255 255 255 / 0.55);
+        border: 1px solid rgba(255 255 255 / 0.15);
+      }
+
+      /* ════════════════════════════════
+         SCREEN 2 — Video
+      ════════════════════════════════ */
+      #screen-video {
+        background: #000;
+      }
+
+      #overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 50;
+        background: #111;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: opacity 0.4s;
+      }
+      #overlay.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .overlay-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #fff;
+        text-align: center;
+        padding: 0 2rem;
+        line-height: 1.4;
+        animation: phoneRing 0.6s ease-in-out infinite;
+        transform-origin: top center;
+      }
+
+      @keyframes phoneRing {
+        0% {
+          transform: rotate(0deg);
+        }
+        10% {
+          transform: rotate(-18deg);
+        }
+        20% {
+          transform: rotate(18deg);
+        }
+        30% {
+          transform: rotate(-14deg);
+        }
+        40% {
+          transform: rotate(14deg);
+        }
+        50% {
+          transform: rotate(-8deg);
+        }
+        60% {
+          transform: rotate(8deg);
+        }
+        70% {
+          transform: rotate(-4deg);
+        }
+        80% {
+          transform: rotate(4deg);
+        }
+        90% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(0deg);
+        }
+      }
+
+      .play-btn {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: #111;
+        box-shadow: 0 4px 20px rgba(255 255 255 / 0.15);
+      }
+
+      #video-wrapper {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #000;
+      }
+
+      #video-inner {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 9 / 16;
+        max-width: min(100vw, calc(100dvh * 9 / 16));
+        max-height: 100dvh;
+      }
+
+      #player {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      #skip-btn {
+        position: absolute;
+        bottom: 2rem;
+        right: 1.5rem;
+        z-index: 60;
+        background: rgba(0 0 0 / 0.55);
+        border: 1px solid rgba(255 255 255 / 0.2);
+        color: rgba(255 255 255 / 0.55);
+        font-size: 0.75rem;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        display: none;
+      }
+
+      /* ════════════════════════════════
+         SCREEN 3 — Tom game
+      ════════════════════════════════ */
+      #screen-tom {
+        background: #111;
+        justify-content: flex-start;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding-bottom: 3rem;
+      }
+
+      :root {
+        --start-size: 110px;
+      }
+
+      #tom-header {
+        width: 100%;
+        padding: 1.6rem 1.5rem 1rem;
+        text-align: center;
+      }
+
+      #tom-header h1 {
+        font-size: clamp(1.1rem, 5vw, 1.5rem);
+        font-weight: 800;
+        color: #fff;
+        line-height: 1.3;
+      }
+
+      #stage {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 50dvh;
+      }
+
+      #tom-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        transition:
+          width 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+          height 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        width: var(--start-size);
+        height: var(--start-size);
+      }
+
+      #tom-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+        pointer-events: none;
+      }
+
+      #tom-fallback {
+        display: none;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: rgba(255 255 255 / 0.1);
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+      }
+
+      @keyframes wobble {
+        0% {
+          transform: scale(1) rotate(0deg);
+        }
+        20% {
+          transform: scale(1.12) rotate(-4deg);
+        }
+        40% {
+          transform: scale(1.08) rotate(4deg);
+        }
+        60% {
+          transform: scale(1.05) rotate(-2deg);
+        }
+        80% {
+          transform: scale(1.02) rotate(1deg);
+        }
+        100% {
+          transform: scale(1) rotate(0deg);
+        }
+      }
+      .wobble {
+        animation: wobble 0.35s ease;
+      }
+
+      @keyframes danger-shake {
+        0%,
+        100% {
+          transform: rotate(0deg);
+        }
+        20% {
+          transform: rotate(-6deg) scale(1.05);
+        }
+        40% {
+          transform: rotate(6deg) scale(1.05);
+        }
+        60% {
+          transform: rotate(-4deg) scale(1.05);
+        }
+        80% {
+          transform: rotate(4deg) scale(1.05);
+        }
+      }
+      .danger-shake {
+        animation: danger-shake 0.3s ease;
+      }
+
+      @keyframes popBurst {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+          filter: brightness(1);
+        }
+        40% {
+          transform: scale(1.5);
+          opacity: 1;
+          filter: brightness(2);
+        }
+        100% {
+          transform: scale(0.1);
+          opacity: 0;
+          filter: brightness(3);
+        }
+      }
+      .popping {
+        animation: popBurst 0.5s ease-in forwards !important;
+      }
+
+      /* Gift reveal */
+      #reward-screen {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2rem 1.5rem;
+        background: url("/hub/tom/ayrikasse.png") center center / cover
+          no-repeat;
+        animation: fadeIn 0.6s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      #reward-screen h2 {
+        font-size: 1.6rem;
+        font-weight: 900;
+        color: #fff;
+        margin-bottom: 0.4rem;
+        background: rgba(0 0 0 / 0.55);
+        padding: 0.3rem 1rem;
+        border-radius: 10px;
+      }
+
+      #reward-screen p {
+        font-size: 0.85rem;
+        color: #fff;
+        margin-bottom: 1.8rem;
+        line-height: 1.5;
+        background: rgba(0 0 0 / 0.45);
+        padding: 0.25rem 0.8rem;
+        border-radius: 8px;
+      }
+
+      .gx7k2m {
+        background: #111;
+        border: 1px solid rgba(255 255 255 / 0.15);
+        border-radius: 16px;
+        padding: 1.2rem 2rem;
+        width: min(90%, 320px);
+      }
+
+      .nt4hbz {
+        font-family: "Courier New", monospace;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 3px;
+      }
+
+      @keyframes dropFly {
+        0% {
+          opacity: 1;
+          transform: translate(0, 0) scale(1);
+        }
+        100% {
+          opacity: 0;
+          transform: translate(var(--dx), var(--dy)) scale(0.5);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ══ SCREEN 1: Age check ══ -->
+    <div id="screen-age" class="screen active">
+      <div class="card">
+        <div class="badge">⚠️ Altersverifikation ⚠️</div>
+        <span class="emoji-row">🥵💕💦</span>
+        <h1>Sind sie bereits<br />17 Jahre alt?</h1>
+        <div class="buttons">
+          <button class="btn btn-yes" onclick="goYes()">Ja</button>
+          <button class="btn btn-no" onclick="goNo()">Nein</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SCREEN 2: Video ══ -->
+    <div id="screen-video" class="screen">
+      <div id="video-wrapper">
+        <div id="video-inner">
+          <div id="player"></div>
+        </div>
+      </div>
+      <div id="overlay" onclick="startVideo()">
+        <div class="overlay-title">
+          Oh... es scheint dich jemand anzurufen 📞
+        </div>
+        <div class="play-btn">▶</div>
+      </div>
+      <button id="skip-btn" onclick="showTom()">Weiter →</button>
+    </div>
+
+    <!-- ══ SCREEN 3: Tom game ══ -->
+    <div id="screen-tom" class="screen">
+      <header id="tom-header">
+        <h1>Schlag mich</h1>
+      </header>
+      <div id="stage">
+        <div
+          id="stage-inner"
+          style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+          "
+        >
+          <div id="tom-wrap" onclick="handleClick()">
+            <img
+              id="tom-img"
+              src="/hub/tom/tom.png"
+              alt="Tom"
+              onerror="showFallback()"
+            />
+            <div id="tom-fallback"><span>😊</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Reward overlay (shown over screen 3) ══ -->
+    <div id="reward-screen">
+      <h2>Alles Gute Großer</h2>
+      <p>Kauf dir eine tolle digitale Zugstrecke damit</p>
+      <div class="gx7k2m">
+        <div class="nt4hbz">XXXX-XXXX-XXXX</div>
+      </div>
+    </div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+      /* ── Navigation ── */
+      function showScreen(id) {
+        document
+          .querySelectorAll(".screen")
+          .forEach((s) => s.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+      }
+
+      function goYes() {
+        showScreen("screen-video");
+      }
+      function goNo() {
+        window.location.href = "https://demenzhilfe-deutschland.de/";
+      }
+      function showTom() {
+        showScreen("screen-tom");
+      }
+
+      /* ── YouTube ── */
+      var ytPlayer = null;
+      var ytReady = false;
+      var startPending = false;
+
+      function onYouTubeIframeAPIReady() {
+        ytReady = true;
+        if (startPending) _createPlayer();
+      }
+
+      function startVideo() {
+        document.getElementById("overlay").classList.add("hidden");
+        if (ytReady) {
+          _createPlayer();
+        } else {
+          startPending = true;
+        }
+        setTimeout(() => {
+          document.getElementById("skip-btn").style.display = "block";
+        }, 3000);
+      }
+
+      function _createPlayer() {
+        ytPlayer = new YT.Player("player", {
+          videoId: "z4OdFSjiX40",
+          playerVars: {
+            autoplay: 1,
+            playsinline: 1,
+            controls: 1,
+            rel: 0,
+            modestbranding: 1,
+            fs: 0,
+          },
+          events: {
+            onStateChange: function (e) {
+              if (e.data === 0) showTom();
+            },
+          },
+        });
+      }
+
+      /* ── Tom game ── */
+      const MAX_CLICKS = 10;
+      const START_SIZE = 110;
+      const INCREMENT = (320 - 110) / MAX_CLICKS;
+
+      let clickCount = 0;
+      let popped = false;
+
+      const tomWrap = document.getElementById("tom-wrap");
+      const stageInner = document.getElementById("stage-inner");
+      const rewardScreen = document.getElementById("reward-screen");
+
+      function showFallback() {
+        document.getElementById("tom-img").style.display = "none";
+        document.getElementById("tom-fallback").style.display = "flex";
+      }
+
+      function handleClick() {
+        if (popped) return;
+        clickCount++;
+        if (clickCount >= MAX_CLICKS) {
+          popTom();
+          return;
+        }
+
+        const newSize = Math.round(START_SIZE + clickCount * INCREMENT);
+        tomWrap.style.width = newSize + "px";
+        tomWrap.style.height = newSize + "px";
+
+        const animClass = clickCount >= 7 ? "danger-shake" : "wobble";
+        tomWrap.classList.remove("wobble", "danger-shake");
+        void tomWrap.offsetWidth;
+        tomWrap.classList.add(animClass);
+
+        spawnDrops(3 + clickCount);
+        if (navigator.vibrate) navigator.vibrate(clickCount >= 8 ? 60 : 30);
+      }
+
+      function spawnDrops(count) {
+        const rect = tomWrap.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        for (let i = 0; i < count; i++) {
+          const el = document.createElement("div");
+          const size = 14 + Math.random() * 10;
+          const angle = Math.random() * 360;
+          const dist = 50 + Math.random() * 80;
+          const dx = Math.cos((angle * Math.PI) / 180) * dist;
+          const dy = Math.sin((angle * Math.PI) / 180) * dist;
+          el.style.cssText = `position:fixed;font-size:${size}px;left:${cx}px;top:${cy}px;pointer-events:none;z-index:999;line-height:1;--dx:${dx}px;--dy:${dy}px;animation:dropFly ${0.4 + Math.random() * 0.4}s ease-out forwards;`;
+          el.textContent = "💦";
+          document.body.appendChild(el);
+          el.addEventListener("animationend", () => el.remove());
+        }
+      }
+
+      function popTom() {
+        popped = true;
+        if (navigator.vibrate) navigator.vibrate([80, 40, 80, 40, 150]);
+        spawnDrops(60);
+        tomWrap.classList.remove("wobble", "danger-shake");
+        tomWrap.classList.add("popping");
+        setTimeout(() => {
+          stageInner.style.display = "none";
+          rewardScreen.style.display = "flex";
+          spawnDrops(80);
+        }, 520);
+      }
+    </script>
+  </body>
+</html>
