@@ -2,414 +2,237 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-  <title>Alles Gute zum Geburtstag Julia! 🎀✨</title>
-  <meta name="description" content="Eine ganz besondere Geburtstagsüberraschung für Julia zu ihrem 20. Geburtstag.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Alles Gute Julia! 🎂</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎀</text></svg>">
 
-  <!-- Google Fonts: Editorial Serif & Clean Sans & Script -->
+  <!-- Google Fonts: Elegant Serif & Modern Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sacramento&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
 
-  <!-- Background Ambient Particles Canvas -->
-  <canvas id="ambient-canvas" aria-hidden="true"></canvas>
-
-  <!-- Confetti Canvas -->
+  <!-- Background Canvas for Confetti -->
   <canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
-  <!-- Floating Audio & Confetti Bar -->
-  <header class="floating-bar" role="toolbar" aria-label="Interaktive Werkzeuge">
-    <button id="music-toggle-btn" class="float-btn" type="button" title="Geburtstags-Melodie an-/ausschalten">
-      🎵 Musik: Aus
-    </button>
-    <button id="confetti-trigger-btn" class="float-btn" type="button" title="Konfetti werfen">
-      🎉 Konfetti
-    </button>
-  </header>
-
-  <main class="app-container">
+  <main class="mobile-viewport">
 
     <!-- ═══════════════════════════════════════════════════════════════
-         STAGE 1: BIRTHDAY VAULT (Lock Screen with 31.10.2006 check)
+         EXPIRED SCREEN (Aktiv ab dem 1.11.)
          ═══════════════════════════════════════════════════════════════ -->
-    <section id="stage-vault" class="view-section active" aria-label="Geburtsdatum Verifikation">
-      <div class="vault-card">
-        <div class="badge-pill">
-          <span class="bow-icon" aria-hidden="true">🎀</span>
-          <span>Privater Tresor</span>
-        </div>
+    <section id="screen-expired" class="screen" aria-label="Abgelaufen" style="display: none;">
+      <div class="card card-expired">
+        <div class="emoji-header">🔒</div>
+        <h2>Nicht mehr verfügbar</h2>
+        <p>Diese Website war nur an Julias Geburtstag (31.10.) aktiv.</p>
+        <div class="badge-mini">31.10.2006 🎂</div>
+      </div>
+    </section>
 
-        <h1 class="vault-title">Für Julia</h1>
-        <p class="vault-desc">
-          Bevor du dein Geburtstagsgeschenk öffnen darfst, bestätige bitte kurz dein Geburtsdatum:
-        </p>
+    <!-- ═══════════════════════════════════════════════════════════════
+         SCREEN 1: GEBURTSTAGSEINGABE (Minimal & Ohne Corny Text)
+         ═══════════════════════════════════════════════════════════════ -->
+    <section id="screen-lock" class="screen active" aria-label="Geburtsdatum eingeben">
+      <div class="card card-lock">
+        <div class="icon-tag">🎀</div>
 
-        <form id="vault-form" onsubmit="event.preventDefault();" novalidate>
-          <div class="date-input-group">
-            <div class="date-segment">
-              <label for="input-day">Tag</label>
-              <input id="input-day" class="date-input" type="text" inputmode="numeric" placeholder="TT" maxlength="2" autocomplete="off" autofocus aria-label="Geburtstag Tag">
-            </div>
-
-            <span class="date-separator" aria-hidden="true">.</span>
-
-            <div class="date-segment">
-              <label for="input-month">Monat</label>
-              <input id="input-month" class="date-input" type="text" inputmode="numeric" placeholder="MM" maxlength="2" autocomplete="off" aria-label="Geburtstag Monat">
-            </div>
-
-            <span class="date-separator" aria-hidden="true">.</span>
-
-            <div class="date-segment">
-              <label for="input-year">Jahr</label>
-              <input id="input-year" class="date-input year-input" type="text" inputmode="numeric" placeholder="JJJJ" maxlength="4" autocomplete="off" aria-label="Geburtstag Jahr">
-            </div>
+        <form id="lock-form" onsubmit="event.preventDefault();" novalidate>
+          <div class="date-picker-row">
+            <input 
+              id="in-day" 
+              class="date-box" 
+              type="tel" 
+              inputmode="numeric" 
+              pattern="[0-9]*" 
+              maxlength="2" 
+              placeholder="TT" 
+              autocomplete="off" 
+              autofocus 
+              aria-label="Tag"
+            >
+            <span class="dot">.</span>
+            <input 
+              id="in-month" 
+              class="date-box" 
+              type="tel" 
+              inputmode="numeric" 
+              pattern="[0-9]*" 
+              maxlength="2" 
+              placeholder="MM" 
+              autocomplete="off" 
+              aria-label="Monat"
+            >
+            <span class="dot">.</span>
+            <input 
+              id="in-year" 
+              class="date-box year" 
+              type="tel" 
+              inputmode="numeric" 
+              pattern="[0-9]*" 
+              maxlength="4" 
+              placeholder="JJJJ" 
+              autocomplete="off" 
+              aria-label="Jahr"
+            >
           </div>
 
-          <div id="vault-hint" class="vault-hint" aria-live="polite"></div>
-
-          <button id="btn-unlock" class="btn-unlock" type="button">
-            <span>Tresor öffnen</span>
-            <span aria-hidden="true">💖</span>
+          <button id="btn-confirm-date" class="btn-primary" type="button">
+            Bestätigen
           </button>
+
+          <div id="lock-error" class="error-msg" aria-live="polite"></div>
         </form>
       </div>
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════════
-         STAGE 2: CELEBRATION & INTERACTIVE CAKE
+         SCREEN 2: KUCHEN ANIMATION & ALLES GUTE ZUM GEBURTSTAG JULIA
          ═══════════════════════════════════════════════════════════════ -->
-    <section id="stage-celebration" class="view-section" aria-label="Geburtstagskuchen und Feier">
-      <div class="celebration-wrap">
+    <section id="screen-cake" class="screen" aria-label="Geburtstagskuchen">
+      <div class="card card-cake">
         
-        <div class="badge-pill">
-          <span aria-hidden="true">✨</span>
-          <span>Dein Ehrentag</span>
-          <span aria-hidden="true">🎂</span>
-        </div>
-
-        <div id="cake-prompt" class="cake-prompt-bubble" role="status">
-          ✨ Puste die Kerzen aus oder klicke auf die Torte! 🕯️
-        </div>
-
-        <!-- Interactive SVG Birthday Cake -->
-        <div id="cake-scene" class="cake-scene" title="Klicke, um die Kerzen auszupusten!">
-          <svg width="260" height="230" viewBox="0 0 260 230" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Interactive Cake SVG -->
+        <div id="cake-interactive" class="cake-box" role="button" tabindex="0" title="Tippe auf den Kuchen!">
+          <svg width="220" height="200" viewBox="0 0 220 200" fill="none" xmlns="http://www.w3.org/2000/svg">
             <!-- Plate -->
-            <ellipse cx="130" cy="205" rx="115" ry="16" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="3"/>
-            <ellipse cx="130" cy="202" rx="105" ry="12" fill="#FFFFFF"/>
+            <ellipse cx="110" cy="180" rx="100" ry="14" fill="#FCE7F3" stroke="#F472B6" stroke-width="2"/>
+            <ellipse cx="110" cy="177" rx="90" ry="10" fill="#FFFFFF"/>
 
-            <!-- Cake Base Layer -->
-            <path d="M45 150 C45 130 215 130 215 150 V195 C215 208 45 208 45 195 Z" fill="#FFE4E8"/>
-            <ellipse cx="130" cy="150" rx="85" ry="18" fill="#FFF0F3"/>
+            <!-- Cake Tier 1 -->
+            <path d="M35 130 C35 115 185 115 185 130 V170 C185 180 35 180 35 170 Z" fill="#FBCFE8"/>
+            <ellipse cx="110" cy="130" rx="75" ry="15" fill="#FDF2F8"/>
+            <path d="M35 130 C45 140 55 140 65 130 C75 140 85 140 95 130 C105 140 115 140 125 130 C135 140 145 140 155 130 C165 140 175 140 185 130 V136 C175 146 165 146 155 136 C145 146 135 146 125 136 C115 146 105 146 95 136 C85 146 75 146 65 136 C55 146 45 146 35 136 Z" fill="#F43F5E"/>
 
-            <!-- Scalloped Frosting Drips Base -->
-            <path d="M45 150 C55 162 65 162 75 150 C85 162 95 162 105 150 C115 162 125 162 135 150 C145 162 155 162 165 150 C175 162 185 162 195 150 C205 162 215 162 215 150 V158 C205 170 195 170 185 158 C175 170 165 170 155 158 C145 170 135 170 125 158 C115 170 105 170 95 158 C85 170 75 170 65 158 C55 170 45 170 45 158 Z" fill="#FB7185"/>
+            <!-- Cake Tier 2 -->
+            <path d="M55 88 C55 75 165 75 165 88 V122 C165 130 55 130 55 122 Z" fill="#FFF1F2"/>
+            <ellipse cx="110" cy="88" rx="55" ry="12" fill="#FFFFFF"/>
 
-            <!-- Cake Top Layer -->
-            <path d="M68 100 C68 85 192 85 192 100 V140 C192 150 68 150 68 140 Z" fill="#FFF0F5"/>
-            <ellipse cx="130" cy="100" rx="62" ry="14" fill="#FFFFFF"/>
+            <!-- Berry toppings -->
+            <circle cx="70" cy="86" r="6" fill="#E11D48"/>
+            <circle cx="90" cy="83" r="6" fill="#E11D48"/>
+            <circle cx="110" cy="82" r="6" fill="#E11D48"/>
+            <circle cx="130" cy="83" r="6" fill="#E11D48"/>
+            <circle cx="150" cy="86" r="6" fill="#E11D48"/>
 
-            <!-- Whipped Cream & Strawberry Accents -->
-            <circle cx="80" cy="98" r="8" fill="#F43F5E"/>
-            <circle cx="105" cy="94" r="8" fill="#F43F5E"/>
-            <circle cx="130" cy="93" r="8" fill="#F43F5E"/>
-            <circle cx="155" cy="94" r="8" fill="#F43F5E"/>
-            <circle cx="180" cy="98" r="8" fill="#F43F5E"/>
-
-            <!-- Candles -->
             <!-- Candle 1 -->
-            <rect x="98" y="55" width="8" height="42" rx="4" fill="url(#candleGrad1)"/>
-            <line x1="102" y1="55" x2="102" y2="47" stroke="#475569" stroke-width="2"/>
-            <!-- Candle 1 Flame -->
-            <g class="flame one">
-              <path d="M102 46 C97 40 98 32 102 24 C106 32 107 40 102 46 Z" fill="#F59E0B"/>
-              <ellipse cx="102" cy="40" rx="2" ry="4" fill="#FEF08A"/>
+            <rect x="80" y="48" width="6" height="36" rx="3" fill="#FB7185"/>
+            <line x1="83" y1="48" x2="83" y2="40" stroke="#475569" stroke-width="2"/>
+            <g class="flame flame-1">
+              <path d="M83 40 C79 34 80 28 83 22 C86 28 87 34 83 40 Z" fill="#F59E0B"/>
+              <circle cx="83" cy="35" r="2" fill="#FEF08A"/>
             </g>
-            <path class="candle-smoke" d="M102 46 Q98 35 106 20 T100 5" stroke="#94A3B8" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path class="smoke" d="M83 40 Q80 30 86 18 T82 6" stroke="#94A3B8" stroke-width="2" fill="none" stroke-linecap="round"/>
 
             <!-- Candle 2 (Center) -->
-            <rect x="126" y="48" width="8" height="48" rx="4" fill="url(#candleGrad2)"/>
-            <line x1="130" y1="48" x2="130" y2="40" stroke="#475569" stroke-width="2"/>
-            <!-- Candle 2 Flame -->
-            <g class="flame two">
-              <path d="M130 39 C125 33 126 24 130 16 C134 24 135 33 130 39 Z" fill="#F59E0B"/>
-              <ellipse cx="130" cy="32" rx="2.5" ry="5" fill="#FEF08A"/>
+            <rect x="107" y="42" width="6" height="42" rx="3" fill="#F59E0B"/>
+            <line x1="110" y1="42" x2="110" y2="34" stroke="#475569" stroke-width="2"/>
+            <g class="flame flame-2">
+              <path d="M110 34 C106 28 107 20 110 14 C113 20 114 28 110 34 Z" fill="#F59E0B"/>
+              <circle cx="110" cy="28" r="2.5" fill="#FEF08A"/>
             </g>
-            <path class="candle-smoke" d="M130 39 Q126 28 134 14 T128 2" stroke="#94A3B8" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path class="smoke" d="M110 34 Q107 24 113 12 T109 2" stroke="#94A3B8" stroke-width="2" fill="none" stroke-linecap="round"/>
 
             <!-- Candle 3 -->
-            <rect x="154" y="55" width="8" height="42" rx="4" fill="url(#candleGrad1)"/>
-            <line x1="158" y1="55" x2="158" y2="47" stroke="#475569" stroke-width="2"/>
-            <!-- Candle 3 Flame -->
-            <g class="flame three">
-              <path d="M158 46 C153 40 154 32 158 24 C162 32 163 40 158 46 Z" fill="#F59E0B"/>
-              <ellipse cx="158" cy="40" rx="2" ry="4" fill="#FEF08A"/>
+            <rect x="134" y="48" width="6" height="36" rx="3" fill="#FB7185"/>
+            <line x1="137" y1="48" x2="137" y2="40" stroke="#475569" stroke-width="2"/>
+            <g class="flame flame-3">
+              <path d="M137 40 C133 34 134 28 137 22 C140 28 141 34 137 40 Z" fill="#F59E0B"/>
+              <circle cx="137" cy="35" r="2" fill="#FEF08A"/>
             </g>
-            <path class="candle-smoke" d="M158 46 Q154 35 162 20 T156 5" stroke="#94A3B8" stroke-width="2" fill="none" stroke-linecap="round"/>
-
-            <defs>
-              <linearGradient id="candleGrad1" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stop-color="#FDA4AF"/>
-                <stop offset="100%" stop-color="#F43F5E"/>
-              </linearGradient>
-              <linearGradient id="candleGrad2" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stop-color="#FDE047"/>
-                <stop offset="100%" stop-color="#F59E0B"/>
-              </linearGradient>
-            </defs>
+            <path class="smoke" d="M137 40 Q134 30 140 18 T136 6" stroke="#94A3B8" stroke-width="2" fill="none" stroke-linecap="round"/>
           </svg>
         </div>
 
-        <h1 class="hero-greeting">
-          Alles Gute zum Geburtstag, <span class="name-highlight">Julia</span>! 🎉
+        <div class="tap-tip">Tippe auf die Kerzen 🕯️</div>
+
+        <h1 class="congrats-title">
+          Alles Gute zum Geburtstag Julia! 🎂
         </h1>
 
-        <p class="hero-subtitle">
-          Auf dein neues Lebensjahr! Möge jeder einzelne Tag voller Sonnenschein, herrlicher Abenteuer, 
-          wunderbarer Menschen und süßer Momente sein. 💖
-        </p>
-
-        <div class="action-buttons-row">
-          <button id="btn-blow-candles" class="btn-secondary-action" type="button">
-            <span>🕯️ Kerzen auspusten / anzünden</span>
-          </button>
-          
-          <button id="btn-trigger-call" class="btn-primary-action" type="button">
-            <span>📞 Eingehender Videoanruf...</span>
-          </button>
-        </div>
-
+        <button id="btn-next-call" class="btn-primary btn-call-cta" type="button">
+          Weiter 📞
+        </button>
       </div>
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════════
-         STAGE 3: INCOMING FACETIME CALL SCREEN
+         SCREEN 3: EINGEHENDER ANRUF (iPhone Style, Klingelt)
          ═══════════════════════════════════════════════════════════════ -->
-    <section id="stage-call" class="view-section" aria-label="Eingehender Anruf">
-      <div class="phone-modal-card">
-        <div class="phone-badge">FaceTime-Videoanruf</div>
-
-        <div class="caller-avatar-wrap">
-          <div class="pulse-ring" aria-hidden="true"></div>
-          <div class="pulse-ring delay" aria-hidden="true"></div>
-          <div class="caller-avatar">
-            <span>🎀</span>
-          </div>
+    <section id="screen-call" class="screen" aria-label="Eingehender Anruf">
+      <div class="iphone-call-screen">
+        <div class="call-top">
+          <div class="call-type">FaceTime-Videoanruf</div>
+          <div class="caller-name">Marvin</div>
+          <div class="call-status">Klingelt...</div>
         </div>
 
-        <h2 class="caller-name">Marvin ✨</h2>
-        <div class="caller-status">
-          <span aria-hidden="true">📲</span>
-          <span>Klingelt...</span>
+        <div class="caller-center">
+          <div class="radar-wave"></div>
+          <div class="radar-wave delay"></div>
+          <div class="avatar-circle">M</div>
         </div>
 
-        <div class="call-buttons-row">
-          <div class="call-action-col">
-            <button id="btn-decline-call" class="call-btn btn-decline" type="button" aria-label="Anruf ablehnen">
+        <div class="call-actions">
+          <div class="action-btn-wrap">
+            <button id="btn-decline" class="round-btn btn-decline" type="button" aria-label="Ablehnen">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-6-6 19.8 19.8 0 0 1-3.12-8.69 2 2 0 0 1 2-2.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.29 8.29"/>
                 <line x1="22" y1="2" x2="2" y2="22"/>
               </svg>
             </button>
-            <span class="call-action-label">Ablehnen</span>
+            <span>Ablehnen</span>
           </div>
 
-          <div class="call-action-col">
-            <button id="btn-accept-call" class="call-btn btn-accept" type="button" aria-label="Anruf annehmen">
+          <div class="action-btn-wrap">
+            <button id="btn-accept" class="round-btn btn-accept" type="button" aria-label="Annehmen">
               <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
               </svg>
             </button>
-            <span class="call-action-label">Annehmen</span>
+            <span>Annehmen</span>
           </div>
         </div>
       </div>
     </section>
 
     <!-- ═══════════════════════════════════════════════════════════════
-         STAGE 4: FACETIME YOUTUBE SHORT THEATER
+         SCREEN 4: YOUTUBE SHORT VIDEO (Mobil-optimiertes Theater)
          ═══════════════════════════════════════════════════════════════ -->
-    <section id="stage-video" class="view-section" aria-label="Geburtstagsvideo Anruf">
-      <div class="facetime-theater">
-        <!-- Dynamic Island -->
-        <div class="phone-dynamic-island" aria-hidden="true">
-          <div class="camera-dot"></div>
-          <div class="sensor-dot"></div>
+    <section id="screen-video" class="screen" aria-label="Videoüberraschung">
+      <div class="video-card">
+        <div class="video-header">
+          <span>FaceTime mit Marvin</span>
+          <span id="call-counter" class="timer">00:01</span>
         </div>
 
-        <!-- Top Header -->
-        <div class="facetime-topbar">
-          <span style="font-size: 0.85rem; font-weight: 600;">Julia & Marvin 💕</span>
-          <span id="call-timer" class="call-timer-badge">00:00</span>
-        </div>
-
-        <!-- YouTube Embed Container -->
-        <div class="video-container">
+        <div class="short-frame">
           <iframe 
-            id="yt-player"
+            id="yt-frame"
             src="https://www.youtube-nocookie.com/embed/XIZSZXd-RYc?autoplay=1&playsinline=1&rel=0&loop=1&playlist=XIZSZXd-RYc" 
-            title="Julia Geburtstagsvideo"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            title="Geburtstagsvideo"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
             allowfullscreen>
           </iframe>
         </div>
 
-        <!-- Bottom Controls -->
-        <div class="facetime-bottombar">
-          <button class="facetime-control-btn" type="button" title="Stummschalten" aria-label="Stummschalten">
-            🎙️
-          </button>
-          
-          <button id="btn-end-call" class="facetime-control-btn end-call" type="button" title="Auflegen und zur Geburtstags-Lounge gehen" aria-label="Auflegen">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-6-6 19.8 19.8 0 0 1-3.12-8.69 2 2 0 0 1 2-2.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.29 8.29"/>
-              <line x1="22" y1="2" x2="2" y2="22"/>
-            </svg>
-          </button>
-
-          <button class="facetime-control-btn" type="button" title="Kamera drehen" aria-label="Kamera drehen">
-            📷
+        <div class="video-footer">
+          <a class="btn-yt-direct" href="https://youtube.com/shorts/XIZSZXd-RYc" target="_blank" rel="noopener noreferrer">
+            Direkt auf YouTube öffnen ↗
+          </a>
+          <button id="btn-replay-cake" class="btn-ghost" type="button">
+            Zurück zur Torte 🎂
           </button>
         </div>
-      </div>
-
-      <div class="video-extra-info">
-        <a class="yt-fallback-link" href="https://youtube.com/shorts/XIZSZXd-RYc" target="_blank" rel="noopener noreferrer">
-          Video lädt nicht? Direkt auf YouTube öffnen ↗
-        </a>
-      </div>
-    </section>
-
-    <!-- ═══════════════════════════════════════════════════════════════
-         STAGE 5: THE COMPLETE BIRTHDAY LOUNGE & EXTRAS
-         ═══════════════════════════════════════════════════════════════ -->
-    <section id="stage-lounge" class="view-section" aria-label="Geburtstags-Lounge">
-      <div class="lounge-container">
-        
-        <header class="section-headline">
-          <h2>Julias Geburtstags-Lounge 🌸</h2>
-          <p>Hier warten noch ein paar persönliche Überraschungen auf dich!</p>
-        </header>
-
-        <!-- 1. Interactive Wax-Sealed Letter -->
-        <div class="envelope-wrap">
-          <div id="open-letter-card" class="envelope-card" role="button" tabindex="0" aria-label="Geburtstagsbrief öffnen">
-            <div class="wax-seal" aria-hidden="true">💌</div>
-            <h3 class="envelope-title">Ein persönlicher Geburtstagsbrief</h3>
-            <p class="envelope-subtitle">Klicke auf das Siegel, um die Botschaft zu lesen ✨</p>
-          </div>
-        </div>
-
-        <!-- 2. Polaroid Memories & Wishes Gallery -->
-        <div class="polaroids-grid">
-          <article class="polaroid-card">
-            <div class="washi-tape" aria-hidden="true"></div>
-            <div class="polaroid-img-box">
-              <span>🎀</span>
-            </div>
-            <div class="polaroid-caption">Happy 20th!</div>
-            <p class="polaroid-sub">Ein rundes neues Jahrzehnt voller Magie und Glück.</p>
-          </article>
-
-          <article class="polaroid-card">
-            <div class="washi-tape" aria-hidden="true"></div>
-            <div class="polaroid-img-box">
-              <span>🥂</span>
-            </div>
-            <div class="polaroid-caption">Cheers to you!</div>
-            <p class="polaroid-sub">Auf Gesundheit, Lachen und unvergessliche Augenblicke.</p>
-          </article>
-
-          <article class="polaroid-card">
-            <div class="washi-tape" aria-hidden="true"></div>
-            <div class="polaroid-img-box">
-              <span>🍰</span>
-            </div>
-            <div class="polaroid-caption">Sweetest Day!</div>
-            <p class="polaroid-sub">Heute zählen keine Kalorien – feier dich selbst!</p>
-          </article>
-        </div>
-
-        <!-- 3. Julia's Fortune Cookie / Compliment Generator -->
-        <section class="fortune-box" aria-label="Geburtstags-Glückskeks">
-          <h3 style="font-family: var(--font-serif); font-size: 1.35rem; margin-bottom: 0.3rem;">
-            Julias Geburtstags-Glückskeks ✨
-          </h3>
-          <p style="font-size: 0.88rem; color: var(--text-muted);">
-            Tippe auf den Keks, um deine Tages-Prophezeiung oder ein Kompliment zu ziehen:
-          </p>
-
-          <button id="btn-fortune-cookie" class="fortune-cookie-btn" type="button" aria-label="Glückskeks knacken">
-            🥠
-          </button>
-
-          <div id="fortune-display" class="fortune-display">
-            ✨ Klicke auf den Glückskeks, um dein Geburtstagskompliment zu enthüllen!
-          </div>
-        </section>
-
-        <!-- 4. Replay & Quick Navigation Bar -->
-        <footer class="lounge-nav-bar">
-          <button id="nav-to-cake" class="lounge-nav-btn" type="button">
-            <span>🎂</span>
-            <span>Zum Kuchen zurück</span>
-          </button>
-
-          <button id="nav-to-video" class="lounge-nav-btn" type="button">
-            <span>🎥</span>
-            <span>Videoanruf ansehen</span>
-          </button>
-
-          <button id="nav-to-lock" class="lounge-nav-btn" type="button">
-            <span>🔒</span>
-            <span>Tresor sperren</span>
-          </button>
-        </footer>
-
       </div>
     </section>
 
   </main>
 
-  <!-- ═══════════════════════════════════════════════════════════════
-       NATIVE DIALOG: BIRTHDAY LETTER (Complies with Modern Web Guidance)
-       ═══════════════════════════════════════════════════════════════ -->
-  <dialog id="letter-dialog" closedby="any" aria-labelledby="letter-dialog-title">
-    <div class="modal-header">
-      <h2 id="letter-dialog-title" class="modal-title">Alles Liebe zum Geburtstag! 💌</h2>
-      <form method="dialog">
-        <button class="btn-close-modal" aria-label="Brief schließen" autofocus>✕</button>
-      </form>
-    </div>
-
-    <div class="letter-content">
-      Liebe Julia,
-
-      alles, alles Liebe und Gute zu deinem 20. Geburtstag! 🎂✨
-
-      Ein rundes neues Jahrzehnt beginnt – und damit ganz viele neue Abenteuer, wundervolle Momente und unvergessliche Erinnerungen. Ich wünsche dir von ganzem Herzen für dein neues Lebensjahr:
-
-      🌸 Unendlich viele Momente, die dich zum Lachen bringen
-      ✨ Den Mut, jedem deiner großen und kleinen Träume zu folgen
-      💖 Menschen an deiner Seite, die dich schätzen und glücklich machen
-      🍰 Und heute natürlich die allerbeste Torte und die schönste Feier!
-
-      Genieße deinen ganz besonderen Tag in vollen Zügen. Du hast nur das Allerbeste verdient!
-
-      <div class="letter-signature">
-        Alles Liebe, Marvin 🎀
-      </div>
-    </div>
-  </dialog>
-
-  <!-- Interactive Toast Notification -->
-  <aside id="toast" class="toast-msg" role="status" aria-live="polite"></aside>
+  <!-- Mobile Toast Notification -->
+  <aside id="toast-note" class="toast" role="status" aria-live="polite"></aside>
 
   <script src="./script.js"></script>
 </body>
