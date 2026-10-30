@@ -112,16 +112,13 @@ body {
 /* ═══════════════════════════════════════════════════════════════════
    SCREEN 1: LOCK SCREEN (Minimal: Nur Datum & Bestätigen)
    ═══════════════════════════════════════════════════════════════════ */
-.icon-tag {
-  font-size: 2.5rem;
+.lock-title {
+  font-family: var(--font-serif);
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--text-main);
   margin-bottom: 1.5rem;
-  display: inline-block;
-  animation: bowFloat 2.5s ease-in-out infinite alternate;
-}
-
-@keyframes bowFloat {
-  0% { transform: translateY(0) rotate(-4deg); }
-  100% { transform: translateY(-6px) rotate(4deg); }
+  letter-spacing: -0.3px;
 }
 
 .date-picker-row {

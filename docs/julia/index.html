@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Alles Gute Julia! 🎂</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎀</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>">
 
   <!-- Google Fonts: Elegant Serif & Modern Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -127,16 +127,13 @@
     /* ═══════════════════════════════════════════════════════════════════
        SCREEN 1: LOCK SCREEN (Minimal: Nur Datum & Bestätigen)
        ═══════════════════════════════════════════════════════════════════ */
-    .icon-tag {
-      font-size: 2.5rem;
+    .lock-title {
+      font-family: var(--font-serif);
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: var(--text-main);
       margin-bottom: 1.5rem;
-      display: inline-block;
-      animation: bowFloat 2.5s ease-in-out infinite alternate;
-    }
-
-    @keyframes bowFloat {
-      0% { transform: translateY(0) rotate(-4deg); }
-      100% { transform: translateY(-6px) rotate(4deg); }
+      letter-spacing: -0.3px;
     }
 
     .date-picker-row {
@@ -588,7 +585,7 @@
          ═══════════════════════════════════════════════════════════════ -->
     <section id="screen-lock" class="screen active" aria-label="Geburtsdatum eingeben">
       <div class="card card-lock">
-        <div class="icon-tag">🎀</div>
+        <h1 class="lock-title">Geburtsdatum</h1>
 
         <form id="lock-form" onsubmit="event.preventDefault();" novalidate>
           <div class="date-picker-row">
@@ -762,7 +759,7 @@
         <div class="short-frame">
           <iframe 
             id="yt-frame"
-            src="https://www.youtube-nocookie.com/embed/XIZSZXd-RYc?autoplay=1&playsinline=1&rel=0&loop=1&playlist=XIZSZXd-RYc" 
+            src="" 
             title="Geburtstagsvideo"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
             allowfullscreen>
@@ -1090,9 +1087,10 @@
         setTimeout(() => {
           setScreen('screen-video');
           startTimer();
+          // Load & start YouTube video ONLY after call was accepted
           const frame = document.getElementById('yt-frame');
-          if (frame && !frame.src.includes('autoplay=1')) {
-            frame.src += '&autoplay=1';
+          if (frame) {
+            frame.src = "https://www.youtube-nocookie.com/embed/XIZSZXd-RYc?autoplay=1&playsinline=1&rel=0&loop=1&playlist=XIZSZXd-RYc";
           }
         }, 350);
       });
@@ -1116,6 +1114,9 @@
 
       btnReplayCake?.addEventListener('click', () => {
         if (timerInterval) clearInterval(timerInterval);
+        // Stop video playback when going back
+        const frame = document.getElementById('yt-frame');
+        if (frame) frame.src = "";
         setScreen('screen-cake');
       });
 

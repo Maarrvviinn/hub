@@ -314,10 +314,10 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       setScreen('screen-video');
       startTimer();
-      // Unmute/play YouTube short
+      // Load & start YouTube video ONLY after call was accepted
       const frame = document.getElementById('yt-frame');
-      if (frame && !frame.src.includes('autoplay=1')) {
-        frame.src += '&autoplay=1';
+      if (frame) {
+        frame.src = "https://www.youtube-nocookie.com/embed/XIZSZXd-RYc?autoplay=1&playsinline=1&rel=0&loop=1&playlist=XIZSZXd-RYc";
       }
     }, 350);
   });
@@ -343,6 +343,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnReplayCake?.addEventListener('click', () => {
     if (timerInterval) clearInterval(timerInterval);
+    // Stop video playback when going back
+    const frame = document.getElementById('yt-frame');
+    if (frame) frame.src = "";
     setScreen('screen-cake');
   });
 
